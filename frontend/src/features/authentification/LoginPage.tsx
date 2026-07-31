@@ -26,8 +26,8 @@ export default function LoginPage() {
           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--bleu-800)', letterSpacing: 0.3 }}>CIVILIS</div>
           <div style={{ fontSize: 12.5, color: 'var(--gris-500)', marginTop: 5 }}>
             Indexation et localisation des actes d'etat civil
-Republique togolaise
           </div>
+          <div className="civilis-login-devise">Republique Togolaise · Collectivites territoriales</div>
         </div>
 
         {erreur && <div className="civilis-erreur">{erreur}</div>}
@@ -61,6 +61,9 @@ Republique togolaise
             {chargement ? 'Connexion...' : 'Se connecter'}
           </button>
         </form>
+      </div>
+      <div className="civilis-pied-institutionnel" style={{ position: 'absolute', bottom: 18, left: 0, right: 0, zIndex: 1, color: 'rgba(255,255,255,0.5)' }}>
+        Ministere de l'Administration territoriale, de la Decentralisation et des Collectivites locales
       </div>
     </div>
   )

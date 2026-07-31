@@ -1,15 +1,33 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, LineChart, Line,
 } from 'recharts'
 import { apiClient } from '@/api/client'
+import { useAuth } from '@/auth/AuthContext'
+import { useCompteurAnime } from '@/hooks/useCompteurAnime'
 import type { TableauBordDTO } from '@/types'
-import { FileStack, Users, BookMarked, Building2, TrendingUp } from 'lucide-react'
+import {
+  FileStack, Users, BookMarked, Building2, TrendingUp, ArrowUpRight,
+  Search, FileBarChart2, UserCog, Settings, BookMarked as BookMarkedIcon,
+} from 'lucide-react'
 
 const PALETTE = ['#1e3a5f', '#c8862a', '#2f7d55', '#6c4fa1', '#b23b3b', '#2a7f9e']
 
+interface AccesRapide { to: string; label: string; sousLibelle: string; icone: React.ReactNode; permission?: string }
+
+const ACCES_RAPIDES: AccesRapide[] = [
+  { to: '/recherche', label: 'Recherche', sousLibelle: 'Localiser un acte', icone: <Search size={19} />, permission: 'RECHERCHE_CONSULTER' },
+  { to: '/indexation', label: 'Indexation', sousLibelle: 'Nouvelle fiche', icone: <FileStack size={19} />, permission: 'INDEXATION_CREER' },
+  { to: '/rapports', label: 'Rapports', sousLibelle: 'Statistiques', icone: <FileBarChart2 size={19} />, permission: 'PILOTAGE_CONSULTER' },
+  { to: '/registres', label: 'Registres', sousLibelle: 'Etat des lieux', icone: <BookMarkedIcon size={19} /> },
+  { to: '/utilisateurs', label: 'Agents', sousLibelle: 'Gestion des comptes', icone: <UserCog size={19} />, permission: 'UTILISATEUR_GERER' },
+  { to: '/parametrage', label: 'Parametrage', sousLibelle: 'Sauvegardes', icone: <Settings size={19} />, permission: 'PARAMETRAGE_GERER' },
+]
+
 export default function TableauDeBordPage() {
+  const { aPermission } = useAuth()
   const [donnees, setDonnees] = useState<TableauBordDTO | null>(null)
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState<string | null>(null)
@@ -45,19 +63,20 @@ export default function TableauDeBordPage() {
   }
 
   const repartition = Object.entries(donnees.repartitionParTypeActe).map(([nom, valeur]) => ({ nom, valeur }))
+  const accesVisibles = ACCES_RAPIDES.filter((a) => !a.permission || aPermission(a.permission))
 
   return (
     <div className="civilis-page civilis-entree-douce">
       <div className="civilis-page-entete">
         <h1>Tableau de bord</h1>
-        <p>Vue d'ensemble en temps reel de l'activite d'indexation et de localisation des actes.</p>
+        <p>Vue d'ensemble en temps reel de l'activite d'indexation et de localisation des actes pour les collectivites territoriales.</p>
       </div>
 
       <div className="civilis-kpi-grille">
-        <KpiCarte icone={<FileStack size={20} />} libelle="Fiches indexees" valeur={donnees.totalFichesIndexees} accent="bleu" />
-        <KpiCarte icone={<Users size={20} />} libelle="Personnes recensees" valeur={donnees.totalPersonnes} accent="ocre" />
-        <KpiCarte icone={<BookMarked size={20} />} libelle="Registres physiques" valeur={donnees.totalRegistres} accent="vert" />
-        <KpiCarte icone={<Building2 size={20} />} libelle="Centres actifs" valeur={donnees.totalCentres} accent="violet" />
+        <KpiCarte to="/indexation" icone={<FileStack size={20} />} libelle="Fiches indexees" valeur={donnees.totalFichesIndexees} accent="bleu" />
+        <KpiCarte to="/personnes" icone={<Users size={20} />} libelle="Personnes recensees" valeur={donnees.totalPersonnes} accent="ocre" />
+        <KpiCarte to="/registres" icone={<BookMarked size={20} />} libelle="Registres physiques" valeur={donnees.totalRegistres} accent="vert" />
+        <KpiCarte to="/referentiels" icone={<Building2 size={20} />} libelle="Centres actifs" valeur={donnees.totalCentres} accent="violet" />
       </div>
 
       <div className="civilis-carte civilis-kpi-semaine">
@@ -67,6 +86,23 @@ export default function TableauDeBordPage() {
           <div className="civilis-kpi-semaine-libelle">fiches indexees cette semaine</div>
         </div>
       </div>
+
+      {accesVisibles.length > 0 && (
+        <div className="civilis-carte">
+          <h2>Acces rapides</h2>
+          <div className="civilis-acces-rapides">
+            {accesVisibles.map((a, i) => (
+              <Link key={a.to} to={a.to} className="civilis-acces-carte" style={{ animationDelay: `${i * 45}ms` }}>
+                <div className="civilis-acces-icone">{a.icone}</div>
+                <div>
+                  <div className="civilis-acces-libelle">{a.label}</div>
+                  <div className="civilis-acces-sous-libelle">{a.sousLibelle}</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="civilis-grille-graphiques">
         <div className="civilis-carte civilis-carte-graphique">
@@ -112,16 +148,22 @@ export default function TableauDeBordPage() {
           </ResponsiveContainer>
         </div>
       </div>
+
+      <div className="civilis-pied-institutionnel">CIVILIS · Republique Togolaise · Collectivites territoriales</div>
     </div>
   )
 }
 
-function KpiCarte({ icone, libelle, valeur, accent }: { icone: React.ReactNode; libelle: string; valeur: number; accent: string }) {
+function KpiCarte({ to, icone, libelle, valeur, accent }: { to: string; icone: React.ReactNode; libelle: string; valeur: number; accent: string }) {
+  const valeurAnimee = useCompteurAnime(valeur)
   return (
-    <div className={`civilis-kpi-carte accent-${accent}`}>
-      <div className="civilis-kpi-icone">{icone}</div>
-      <div className="civilis-kpi-valeur">{valeur.toLocaleString('fr-FR')}</div>
-      <div className="civilis-kpi-libelle">{libelle}</div>
-    </div>
+    <Link to={to} className="civilis-kpi-lien">
+      <div className={`civilis-kpi-carte accent-${accent}`} style={{ position: 'relative' }}>
+        <ArrowUpRight size={16} className="civilis-kpi-fleche" />
+        <div className="civilis-kpi-icone">{icone}</div>
+        <div className="civilis-kpi-valeur">{valeurAnimee.toLocaleString('fr-FR')}</div>
+        <div className="civilis-kpi-libelle">{libelle}</div>
+      </div>
+    </Link>
   )
 }

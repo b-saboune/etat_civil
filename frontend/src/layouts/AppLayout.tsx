@@ -97,7 +97,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        {!reduit && <div className="civilis-sidebar-pied">CIVILIS · Palier 1</div>}
+        {!reduit && <div className="civilis-sidebar-pied">CIVILIS · Collectivites territoriales du Togo</div>}
 
         <button className="civilis-sidebar-toggle" onClick={() => setReduit((v) => !v)}>
           {reduit ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -110,7 +110,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <button className="civilis-bouton-menu-mobile" onClick={() => setOuvertMobile(true)} aria-label="Ouvrir le menu">
               <Menu size={20} />
             </button>
-            <div className="civilis-fil-ariane">Republique togolaise · Ministere de l'Administration territoriale</div>
+            <div className="civilis-fil-ariane">
+              <NavLink to="/tableau-de-bord">Republique togolaise</NavLink> · Ministere de l'Administration territoriale et des Collectivites locales
+            </div>
           </div>
           {utilisateur && (
             <div className="civilis-utilisateur-chip">

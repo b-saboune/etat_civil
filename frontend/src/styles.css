@@ -532,3 +532,124 @@ body {
 }
 .civilis-interrupteur input:checked + .civilis-interrupteur-glissiere { background: var(--vert-600, #12b76a); }
 .civilis-interrupteur input:checked + .civilis-interrupteur-glissiere::before { transform: translateX(16px); }
+
+/* ===================== Refonte "effet waouh" — identite institutionnelle togolaise ===================== */
+
+:root {
+  --togo-vert: #0b7a3b;
+  --togo-jaune: #ffce00;
+  --togo-rouge: #d21034;
+}
+
+/* Ruban tricolore : signature institutionnelle reutilisable en haut des ecrans cles. */
+.civilis-ruban-national {
+  height: 4px; width: 100%;
+  background: linear-gradient(90deg, var(--togo-vert) 0 33.33%, var(--togo-jaune) 33.33% 66.66%, var(--togo-rouge) 66.66% 100%);
+  flex-shrink: 0;
+}
+
+@keyframes derive-lente {
+  from { transform: translate3d(0, 0, 0) rotate(0deg); }
+  to { transform: translate3d(0, -30px, 0) rotate(6deg); }
+}
+
+@keyframes lueur-pulsee {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 206, 0, 0.35); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 206, 0, 0); }
+}
+
+@keyframes apparition-nombre {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes balayage-lumiere {
+  from { transform: translateX(-120%) skewX(-15deg); }
+  to { transform: translateX(220%) skewX(-15deg); }
+}
+
+/* Sidebar : ruban tricolore discret + etoile institutionnelle sur le logo */
+.civilis-sidebar { position: relative; }
+.civilis-sidebar::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--togo-vert), var(--togo-jaune), var(--togo-rouge));
+}
+
+.civilis-logo { animation: lueur-pulsee 3.2s ease-in-out infinite; }
+
+/* Boutons primaires : leger effet de balayage lumineux au survol (sobre, une seule passe) */
+.civilis-btn.primaire, .civilis-btn:not(.secondaire) {
+  position: relative; overflow: hidden;
+}
+.civilis-btn.primaire::after, .civilis-btn:not(.secondaire)::after {
+  content: ''; position: absolute; top: 0; left: 0; width: 40%; height: 100%;
+  background: linear-gradient(115deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: translateX(-120%) skewX(-15deg);
+}
+.civilis-btn.primaire:hover::after, .civilis-btn:not(.secondaire):hover:not(:disabled)::after {
+  animation: balayage-lumiere 700ms ease-out;
+}
+
+/* KPI cliquables : les chiffres deviennent des portes d'entree vers les modules lies */
+.civilis-kpi-lien { text-decoration: none; display: block; color: inherit; }
+.civilis-kpi-lien .civilis-kpi-carte { cursor: pointer; }
+.civilis-kpi-lien:hover .civilis-kpi-carte { transform: translateY(-5px) scale(1.015); box-shadow: var(--ombre-lg); }
+.civilis-kpi-lien .civilis-kpi-fleche {
+  position: absolute; top: 18px; right: 18px; opacity: 0; transform: translateX(-4px);
+  transition: opacity var(--transition-rapide), transform var(--transition-rapide); color: var(--gris-500);
+}
+.civilis-kpi-lien:hover .civilis-kpi-fleche { opacity: 1; transform: translateX(0); }
+.civilis-kpi-valeur { animation: apparition-nombre 480ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Jeux de liens : grille d'acces rapide entre modules, avec relief au survol */
+.civilis-acces-rapides { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+.civilis-acces-carte {
+  display: flex; align-items: center; gap: 12px; padding: 16px 16px; border-radius: 12px;
+  background: white; border: 1px solid var(--gris-200); text-decoration: none; color: var(--gris-800);
+  transition: transform var(--transition-rapide), box-shadow var(--transition-rapide), border-color var(--transition-rapide);
+  animation: entree-echelonnee var(--transition-douce) ease-out both;
+}
+.civilis-acces-carte:hover {
+  transform: translateY(-4px); box-shadow: var(--ombre-md); border-color: var(--bleu-400);
+}
+.civilis-acces-icone {
+  width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  background: var(--bleu-100); color: var(--bleu-700); flex-shrink: 0;
+  transition: background var(--transition-rapide), color var(--transition-rapide), transform var(--transition-rapide);
+}
+.civilis-acces-carte:hover .civilis-acces-icone { background: var(--bleu-700); color: white; transform: rotate(-6deg) scale(1.06); }
+.civilis-acces-libelle { font-size: 13.5px; font-weight: 700; color: var(--bleu-900); }
+.civilis-acces-sous-libelle { font-size: 11.5px; color: var(--gris-500); margin-top: 1px; }
+
+/* Login : arriere-plan institutionnel anime (grille + motifs flottants tricolores) */
+.civilis-login-shell {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px),
+    radial-gradient(circle at 15% 20%, rgba(255, 206, 0, 0.14), transparent 42%),
+    radial-gradient(circle at 85% 15%, rgba(11, 122, 59, 0.22), transparent 45%),
+    radial-gradient(circle at 75% 90%, rgba(210, 16, 52, 0.16), transparent 40%),
+    linear-gradient(160deg, var(--bleu-900) 0%, #081627 100%);
+  background-size: 42px 42px, 42px 42px, auto, auto, auto, auto;
+}
+.civilis-login-shell::before, .civilis-login-shell::after {
+  content: ''; position: absolute; border-radius: 50%; filter: blur(2px); opacity: 0.55; z-index: 0;
+  animation: derive-lente 9s ease-in-out infinite alternate;
+}
+.civilis-login-shell::before {
+  width: 10px; height: 10px; background: var(--togo-jaune); top: 18%; left: 22%;
+}
+.civilis-login-shell::after {
+  width: 7px; height: 7px; background: var(--togo-vert); top: 62%; left: 78%; animation-duration: 11s;
+}
+.civilis-login-card { border-top: 4px solid transparent; border-image: linear-gradient(90deg, var(--togo-vert), var(--togo-jaune), var(--togo-rouge)) 1; }
+.civilis-login-devise { font-size: 10.5px; letter-spacing: 1.1px; text-transform: uppercase; color: var(--gris-500); margin-top: 10px; font-weight: 600; }
+
+/* Pied institutionnel, present sur les grands ecrans (dashboard, connexion) */
+.civilis-pied-institutionnel {
+  text-align: center; font-size: 11px; color: var(--gris-500); padding: 18px 0 6px; letter-spacing: 0.3px;
+}
+
+/* Fil d'ariane cliquable dans la topbar : renforce la navigation transversale */
+.civilis-fil-ariane a { color: inherit; text-decoration: none; border-bottom: 1px dotted transparent; transition: border-color var(--transition-rapide); }
+.civilis-fil-ariane a:hover { border-color: currentColor; }
