@@ -32,6 +32,9 @@ public class RbacController {
     @GetMapping("/api/permissions")
     public List<Permission> listerPermissions() { return service.listerPermissions(); }
 
+    @GetMapping("/api/roles/{id}/permissions")
+    public List<Long> listerPermissionsDuRole(@PathVariable Long id) { return service.listerPermissionIdsDuRole(id); }
+
     @PutMapping("/api/roles/{id}/permissions")
     public ResponseEntity<Void> remplacerPermissions(@PathVariable Long id, @RequestBody MatricePermissionsRequest requete) {
         service.remplacerPermissions(id, requete);

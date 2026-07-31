@@ -1,14 +1,24 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { apiClient } from '@/api/client'
-import type { ResultatRechercheDTO } from '@/types'
+import type { ResultatRechercheDTO, TypeActeDTO } from '@/types'
+import { Search, SlidersHorizontal } from 'lucide-react'
 
 export default function RecherchePage() {
   const [nom, setNom] = useState('')
   const [prenoms, setPrenoms] = useState('')
+  const [typeActe, setTypeActe] = useState('')
+  const [dateDebut, setDateDebut] = useState('')
+  const [dateFin, setDateFin] = useState('')
+  const [afficherFiltres, setAfficherFiltres] = useState(false)
+  const [typesActe, setTypesActe] = useState<TypeActeDTO[]>([])
   const [resultats, setResultats] = useState<ResultatRechercheDTO[] | null>(null)
   const [chargement, setChargement] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
   const [aRecherche, setARecherche] = useState(false)
+
+  useEffect(() => {
+    apiClient.get<TypeActeDTO[]>('/referentiels/types-acte').then(({ data }) => setTypesActe(data)).catch(() => {})
+  }, [])
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -16,7 +26,9 @@ export default function RecherchePage() {
     setErreur(null)
     setARecherche(true)
     try {
-      const { data } = await apiClient.get<ResultatRechercheDTO[]>('/recherche', { params: { nom, prenoms } })
+      const { data } = await apiClient.get<ResultatRechercheDTO[]>('/recherche', {
+        params: { nom, prenoms, typeActe: typeActe || undefined, dateDebut: dateDebut || undefined, dateFin: dateFin || undefined },
+      })
       setResultats(data)
     } catch (e: any) {
       setErreur(e?.response?.data?.message ?? 'La recherche a echoue. Reessayez.')
@@ -27,33 +39,61 @@ export default function RecherchePage() {
   }
 
   return (
-    <div className="civilis-contenu">
-      <div className="civilis-card">
-        <h2>Rechercher un acte</h2>
-        <p style={{ color: 'var(--gris-500)', fontSize: 13, marginTop: -2, marginBottom: 20 }}>
-          La localisation physique complete (commune, centre, salle, rayonnage, registre, page)
-          est toujours affichee avec chaque resultat.
-        </p>
-        <form onSubmit={onSubmit} className="civilis-recherche-form">
-          <div className="civilis-field">
-            <label htmlFor="nom">Nom</label>
-            <input id="nom" value={nom} onChange={(e) => setNom(e.target.value)} placeholder="AMEGAN" />
+    <div className="civilis-page civilis-entree-douce">
+      <div className="civilis-page-entete">
+        <h1><Search size={22} style={{ verticalAlign: 'text-bottom', marginRight: 8 }} />Rechercher un acte</h1>
+        <p>La localisation physique complete (commune, centre, salle, rayonnage, registre, page) est toujours affichee avec chaque resultat.</p>
+      </div>
+
+      <div className="civilis-carte">
+        <form onSubmit={onSubmit} className="civilis-formulaire">
+          <div className="civilis-formulaire-grille">
+            <label>Nom
+              <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="AMEGAN" />
+            </label>
+            <label>Prenoms
+              <input value={prenoms} onChange={(e) => setPrenoms(e.target.value)} placeholder="Kossi Edem" />
+            </label>
           </div>
-          <div className="civilis-field">
-            <label htmlFor="prenoms">Prenoms</label>
-            <input id="prenoms" value={prenoms} onChange={(e) => setPrenoms(e.target.value)} placeholder="Kossi Edem" />
-          </div>
-          <button type="submit" className="civilis-btn" disabled={chargement}>
+
+          <button
+            type="button"
+            className="civilis-btn secondaire"
+            style={{ width: 'fit-content', fontSize: 12.5, padding: '8px 14px' }}
+            onClick={() => setAfficherFiltres((v) => !v)}
+          >
+            <SlidersHorizontal size={13} style={{ marginRight: 6 }} />
+            {afficherFiltres ? 'Masquer les filtres avances' : 'Filtres avances'}
+          </button>
+
+          {afficherFiltres && (
+            <div className="civilis-formulaire-grille civilis-entree-douce">
+              <label>Type d'acte
+                <select value={typeActe} onChange={(e) => setTypeActe(e.target.value)}>
+                  <option value="">Tous</option>
+                  {typesActe.map((t) => <option key={t.id} value={t.libelle}>{t.libelle}</option>)}
+                </select>
+              </label>
+              <label>Date de debut
+                <input type="date" value={dateDebut} onChange={(e) => setDateDebut(e.target.value)} />
+              </label>
+              <label>Date de fin
+                <input type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} />
+              </label>
+            </div>
+          )}
+
+          <button type="submit" className="civilis-btn primaire" style={{ width: 'fit-content' }} disabled={chargement}>
             {chargement && <span className="civilis-spinner" />}
             {chargement ? 'Recherche...' : 'Rechercher'}
           </button>
         </form>
       </div>
 
-      {erreur && <div className="civilis-erreur">{erreur}</div>}
+      {erreur && <div className="civilis-alerte-erreur">{erreur}</div>}
 
       {chargement && (
-        <div className="civilis-card">
+        <div className="civilis-carte">
           {[0, 1].map((i) => (
             <div key={i} style={{ marginBottom: 18 }}>
               <div className="civilis-skeleton" style={{ width: '40%', marginBottom: 8 }} />
@@ -64,15 +104,15 @@ export default function RecherchePage() {
       )}
 
       {!chargement && aRecherche && resultats && resultats.length === 0 && (
-        <div className="civilis-card civilis-vide">
+        <div className="civilis-carte civilis-vide">
           <div className="icone">⌕</div>
           Aucun acte ne correspond a cette recherche, meme approximativement.
         </div>
       )}
 
       {!chargement && resultats && resultats.length > 0 && (
-        <div className="civilis-card">
-          <h3 style={{ marginBottom: 16 }}>{resultats.length} resultat(s)</h3>
+        <div className="civilis-carte">
+          <h2 style={{ marginBottom: 16 }}>{resultats.length} resultat(s)</h2>
           {resultats.map((r, index) => (
             <div
               key={r.ficheIndexationId}

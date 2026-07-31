@@ -65,6 +65,18 @@ public class ReferentielsService {
     }
 
     @Transactional
+    public CentreEtatCivil modifierCentre(Long id, CentreDTO dto) {
+        CentreEtatCivil centre = centreRepository.findById(id)
+            .orElseThrow(() -> ApiException.notFound("CENTRE_INTROUVABLE", "Centre introuvable."));
+        Commune commune = communeRepository.findById(dto.communeId())
+            .orElseThrow(() -> ApiException.notFound("COMMUNE_INTROUVABLE", "Commune introuvable."));
+        centre.setCommune(commune);
+        centre.setNom(dto.nom());
+        centre.setAdresse(dto.adresse());
+        return centreRepository.save(centre);
+    }
+
+    @Transactional
     public void desactiverCentre(Long id) {
         CentreEtatCivil centre = centreRepository.findById(id)
             .orElseThrow(() -> ApiException.notFound("CENTRE_INTROUVABLE", "Centre introuvable."));
@@ -80,6 +92,14 @@ public class ReferentielsService {
                 "Impossible de desactiver ce centre : " + registresEnService + " registre(s) en service y sont rattaches.");
         }
         centre.setStatut("INACTIF");
+        centreRepository.save(centre);
+    }
+
+    @Transactional
+    public void reactiverCentre(Long id) {
+        CentreEtatCivil centre = centreRepository.findById(id)
+            .orElseThrow(() -> ApiException.notFound("CENTRE_INTROUVABLE", "Centre introuvable."));
+        centre.setStatut("ACTIF");
         centreRepository.save(centre);
     }
 

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RbacService {
@@ -27,6 +28,14 @@ public class RbacService {
 
     @Transactional(readOnly = true)
     public List<Permission> listerPermissions() { return permissionRepository.findAll(); }
+
+    @Transactional(readOnly = true)
+    public List<Long> listerPermissionIdsDuRole(Long roleId) {
+        return rolePermissionRepository.findByRoleId(roleId).stream()
+            .filter(RolePermission::isAccordee)
+            .map(rp -> rp.getPermission().getId())
+            .collect(Collectors.toList());
+    }
 
     @Transactional
     public Role creerRole(RoleDTO dto) {
