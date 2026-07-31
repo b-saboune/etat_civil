@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/civilis
+    username: civilis_admin
+    password: civilis_dev_password
+  jpa:
+    show-sql: true
+
+logging:
+  level:
+    tg.civilis: DEBUG
+    org.springframework.security: INFO

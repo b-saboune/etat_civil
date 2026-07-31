@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: civilis
+      POSTGRES_USER: civilis_admin
+      POSTGRES_PASSWORD: civilis_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - civilis_pgdata:/var/lib/postgresql/data
+volumes:
+  civilis_pgdata:

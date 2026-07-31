@@ -1,0 +1,114 @@
+:root {
+  --civilis-bleu: #1a3c6e;
+  --civilis-bleu-clair: #2f5da3;
+  --civilis-ocre: #c98a2e;
+  --civilis-gris: #f4f5f7;
+  --civilis-texte: #1f2430;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--civilis-gris);
+  color: var(--civilis-texte);
+}
+
+.civilis-app { min-height: 100vh; display: flex; flex-direction: column; }
+
+.civilis-topbar {
+  background: var(--civilis-bleu);
+  color: white;
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.civilis-topbar .marque { font-size: 20px; font-weight: 600; letter-spacing: 0.5px; }
+.civilis-topbar .sous-marque { font-size: 12px; opacity: 0.8; font-weight: 400; }
+
+.civilis-contenu { flex: 1; padding: 28px; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+.civilis-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.civilis-login-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--civilis-bleu) 0%, #0d2340 100%);
+}
+
+.civilis-login-card {
+  background: white;
+  border-radius: 10px;
+  padding: 40px;
+  width: 380px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.civilis-field { margin-bottom: 16px; }
+.civilis-field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #555; }
+.civilis-field input, .civilis-field select {
+  width: 100%; padding: 10px 12px; border: 1px solid #d5d8de; border-radius: 6px; font-size: 14px;
+}
+.civilis-field input:focus, .civilis-field select:focus { outline: 2px solid var(--civilis-bleu-clair); border-color: transparent; }
+
+.civilis-btn {
+  background: var(--civilis-bleu);
+  color: white;
+  border: none;
+  padding: 11px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.civilis-btn:hover { background: var(--civilis-bleu-clair); }
+.civilis-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.civilis-erreur {
+  background: #fdecea; color: #a12b1f; border: 1px solid #f3c1ba;
+  padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 16px;
+}
+
+.civilis-recherche-form { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.civilis-recherche-form .civilis-field { margin-bottom: 0; min-width: 200px; flex: 1; }
+
+.civilis-resultat {
+  border: 1px solid #e1e3e8;
+  border-left: 4px solid var(--civilis-bleu);
+  border-radius: 6px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+.civilis-resultat.approchee { border-left-color: var(--civilis-ocre); }
+
+.civilis-badge {
+  display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 12px; letter-spacing: 0.4px;
+}
+.civilis-badge.exacte { background: #e3f2e6; color: #1f6d33; }
+.civilis-badge.approchee { background: #fbf0dd; color: #8a5c14; }
+
+.civilis-chaine-loc {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-top: 12px; padding: 12px 14px; background: var(--civilis-gris); border-radius: 6px;
+  font-size: 13px;
+}
+.civilis-chaine-loc .maillon { font-weight: 600; color: var(--civilis-bleu); }
+.civilis-chaine-loc .fleche { color: #999; }
+
+.civilis-personnes { margin-top: 10px; font-size: 13px; color: #444; }
+.civilis-personnes .personne { display: inline-block; margin-right: 14px; }
+.civilis-personnes .role { color: #888; font-size: 11px; text-transform: uppercase; }
+
+.civilis-vide { text-align: center; padding: 40px; color: #888; }

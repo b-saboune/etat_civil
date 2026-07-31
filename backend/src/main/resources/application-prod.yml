@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: ${CIVILIS_DB_URL}
+    username: ${CIVILIS_DB_USER}
+    password: ${CIVILIS_DB_PASSWORD}
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    tg.civilis: INFO
