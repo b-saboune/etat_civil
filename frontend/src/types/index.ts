@@ -32,3 +32,39 @@ export interface ResultatRechercheDTO {
   personnesAssociees: PersonneAssocieeDTO[]
   localisation: LocalisationDTO
 }
+
+export interface CentreChargeDTO {
+  centre: string
+  nombreFiches: number
+  nombreRegistres: number
+}
+
+export interface EvolutionMensuelleDTO {
+  mois: string
+  nombreFiches: number
+}
+
+export interface TableauBordDTO {
+  totalFichesIndexees: number
+  totalPersonnes: number
+  totalRegistres: number
+  totalCentres: number
+  fichesIndexeesCetteSemaine: number
+  repartitionParTypeActe: Record<string, number>
+  chargeParCentre: CentreChargeDTO[]
+  evolutionMensuelle: EvolutionMensuelleDTO[]
+}
+
+export interface CommuneDTO { id: number; nom: string }
+export interface CentreDTO { id: number; communeId: number; nom: string; adresse?: string; statut: string }
+export interface SalleDTO { id: number; centreId: number; nom: string }
+export interface RayonnageDTO { id: number; salleId: number; code: string }
+export interface TypeActeDTO { id: number; libelle: string; actif: boolean }
+export interface RegistreDTO { id: number; centreId: number; rayonnageId: number; typeActeId: number; numeroRegistre: string; annee: number; nbPages: number; statut: string }
+export interface AgentDTO { id: number; identifiant: string; typeCompte: string; statut: string }
+export interface RoleDTO { id: number; libelle: string; description?: string }
+export interface PermissionDTO { id: number; module: string; action: string; code: string }
+export interface JournalEntreeDTO { id: number; utilisateur?: string; module: string; action: string; horodatage: string; details?: string }
+export interface ParametreDTO { id: number; cle: string; valeur: string; description?: string }
+export interface SauvegardeDTO { id: number; dateExecution: string; statut: string; typeDeclenchement: string }
+export interface PersonneDTO { id: number; nom: string; prenoms: string; sexe?: string; dateNaissance?: string; dateApproximative: boolean }

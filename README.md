@@ -15,9 +15,9 @@ l'acte recherche : Collectivite -> Centre -> Salle d'archives -> Rayonnage
 - [x] Schema PostgreSQL (26 tables), valide (chargement teste sans erreur)
 - [x] Backend Spring Boot : structure, securite JWT, authentification
 - [x] Backend : module Recherche & Localisation (RG-REC-005/006/007, RG-LOC-001)
-- [x] Frontend React/TypeScript : ecran de connexion + ecran de recherche
+- [x] Frontend React/TypeScript : navigation laterale institutionnelle, tableau de bord (KPIs + graphiques Recharts), ecrans Recherche, Indexation, Personnes, Registres, Referentiels, Agents, Roles&Permissions, Journal, Parametrage
 - [x] Modules Referentiels, Registres (deplacement+historique), Personnes (recherche+fusion), Indexation (creation transactionnelle)
-- [ ] RBAC dynamique, Administration, Audit, Pilotage, Parametrage
+- [x] RBAC dynamique (matrice roles/permissions), Utilisateurs complet, Administration (Super Admin), Audit (journal, ecriture unique AOP), Pilotage (tableau de bord + KPIs), Parametrage (parametres + sauvegarde manuelle/planifiee)
 - [ ] Palier 2 (numerisation), Palier 3 (front-office citoyen, bloque — RG-FO-001)
 
 Voir `Prompt_Maitre_Developpement_Complet.md` pour le detail complet des

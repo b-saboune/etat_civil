@@ -254,3 +254,155 @@ body {
   background-size: 200% 100%; animation: pulsation-douce 1.4s ease-in-out infinite;
   border-radius: 6px; height: 14px;
 }
+
+/* ===================== Refonte institutionnelle — Palier 1 ===================== */
+
+.civilis-shell { min-height: 100vh; display: flex; background: var(--gris-50); }
+
+.civilis-sidebar {
+  width: 258px; flex-shrink: 0; background: linear-gradient(180deg, var(--bleu-900) 0%, #081627 100%);
+  color: white; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
+  box-shadow: var(--ombre-lg); transition: width var(--transition-douce); z-index: 20;
+}
+.civilis-shell.reduit .civilis-sidebar { width: 76px; }
+
+.civilis-sidebar-tete { display: flex; align-items: center; gap: 12px; padding: 22px 20px 18px; }
+.civilis-sidebar-tete .marque { font-size: 17px; font-weight: 800; color: white; letter-spacing: 0.3px; }
+.civilis-sidebar-tete .sous-marque { font-size: 10.5px; color: rgba(255,255,255,0.55); margin-top: 1px; }
+
+.civilis-nav { flex: 1; overflow-y: auto; padding: 6px 12px 12px; }
+.civilis-nav-section { margin-bottom: 16px; }
+.civilis-nav-titre {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.9px; color: rgba(255,255,255,0.38);
+  padding: 10px 12px 6px; font-weight: 700;
+}
+.civilis-nav-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px;
+  color: rgba(255,255,255,0.78); text-decoration: none; font-size: 13.5px; font-weight: 500;
+  margin-bottom: 2px; transition: background var(--transition-rapide), color var(--transition-rapide), transform var(--transition-rapide);
+}
+.civilis-nav-item:hover { background: rgba(255,255,255,0.08); color: white; transform: translateX(2px); }
+.civilis-nav-item.actif {
+  background: linear-gradient(90deg, rgba(201,138,46,0.28), rgba(201,138,46,0.06));
+  color: white; font-weight: 700; box-shadow: inset 3px 0 0 var(--ocre-600);
+}
+.civilis-nav-icone { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+.civilis-sidebar-toggle {
+  margin: 8px auto 18px; width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: white;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background var(--transition-rapide);
+}
+.civilis-sidebar-toggle:hover { background: rgba(255,255,255,0.18); }
+
+.civilis-corps { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+.civilis-topbar-fine {
+  background: white; border-bottom: 1px solid var(--gris-200); padding: 14px 32px;
+  display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10;
+}
+.civilis-fil-ariane { font-size: 12.5px; color: var(--gris-500); font-weight: 500; }
+.civilis-topbar-fine .civilis-utilisateur-chip {
+  background: var(--gris-50); border: 1px solid var(--gris-200); color: var(--gris-800);
+}
+.civilis-topbar-fine .civilis-avatar { background: var(--bleu-700); color: white; }
+
+.civilis-btn-icone {
+  width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  padding: 0 !important;
+}
+
+.civilis-page { padding: 30px 36px 60px; max-width: 1320px; margin: 0 auto; width: 100%; }
+.civilis-page-entete { margin-bottom: 26px; }
+.civilis-page-entete h1 { font-size: 24px; font-weight: 800; color: var(--bleu-900); margin: 0 0 6px; letter-spacing: -0.2px; }
+.civilis-page-entete p { font-size: 13.5px; color: var(--gris-500); margin: 0; max-width: 760px; line-height: 1.5; }
+
+.civilis-carte {
+  background: white; border-radius: var(--radius); border: 1px solid var(--gris-200);
+  box-shadow: var(--ombre-sm); padding: 24px 26px; margin-bottom: 22px;
+  animation: entree-douce var(--transition-douce) ease-out; transition: box-shadow var(--transition-rapide);
+}
+.civilis-carte:hover { box-shadow: var(--ombre-md); }
+.civilis-carte h2 { font-size: 16.5px; font-weight: 700; margin: 0 0 16px; color: var(--bleu-800); }
+
+.civilis-kpi-grille { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 20px; }
+@media (max-width: 1000px) { .civilis-kpi-grille { grid-template-columns: repeat(2, 1fr); } }
+
+.civilis-kpi-carte {
+  background: white; border-radius: var(--radius); border: 1px solid var(--gris-200); box-shadow: var(--ombre-sm);
+  padding: 20px 22px; position: relative; overflow: hidden; animation: entree-echelonnee var(--transition-douce) ease-out both;
+  transition: transform var(--transition-rapide), box-shadow var(--transition-rapide);
+}
+.civilis-kpi-carte:hover { transform: translateY(-3px); box-shadow: var(--ombre-md); }
+.civilis-kpi-carte::before {
+  content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+}
+.civilis-kpi-carte.accent-bleu::before { background: var(--bleu-600); }
+.civilis-kpi-carte.accent-ocre::before { background: var(--ocre-600); }
+.civilis-kpi-carte.accent-vert::before { background: var(--vert-600); }
+.civilis-kpi-carte.accent-violet::before { background: #6c4fa1; }
+.civilis-kpi-icone { color: var(--gris-500); margin-bottom: 10px; }
+.civilis-kpi-valeur { font-size: 30px; font-weight: 800; color: var(--bleu-900); line-height: 1; }
+.civilis-kpi-libelle { font-size: 12.5px; color: var(--gris-500); margin-top: 6px; font-weight: 500; }
+
+.civilis-kpi-semaine {
+  display: flex; align-items: center; gap: 16px; color: var(--ocre-600); margin-bottom: 8px;
+}
+.civilis-kpi-semaine-valeur { font-size: 22px; font-weight: 800; color: var(--bleu-900); }
+.civilis-kpi-semaine-libelle { font-size: 12.5px; color: var(--gris-500); }
+
+.civilis-grille-graphiques { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+.civilis-carte-graphique h2 { font-size: 14.5px; }
+.civilis-carte-pleine-largeur { grid-column: span 2; }
+@media (max-width: 1000px) { .civilis-grille-graphiques { grid-template-columns: 1fr; } .civilis-carte-pleine-largeur { grid-column: span 1; } }
+
+.civilis-grille-tableaux { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+.civilis-grille-deux { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; }
+@media (max-width: 900px) { .civilis-grille-deux { grid-template-columns: 1fr; } }
+
+.civilis-tableau { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.civilis-tableau th {
+  text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px;
+  color: var(--gris-500); font-weight: 700; padding: 8px 10px; border-bottom: 2px solid var(--gris-200);
+}
+.civilis-tableau td { padding: 11px 10px; border-bottom: 1px solid var(--gris-100); color: var(--gris-800); }
+.civilis-tableau tbody tr { transition: background var(--transition-rapide); }
+.civilis-tableau tbody tr:hover { background: var(--bleu-100); }
+.civilis-actions-cellule { display: flex; gap: 6px; }
+
+.civilis-badge.succes { background: var(--vert-100); color: var(--vert-600); }
+.civilis-badge.neutre { background: var(--gris-100); color: var(--gris-500); }
+.civilis-badge.alerte { background: var(--ocre-100); color: var(--ocre-600); }
+
+.civilis-formulaire { display: flex; flex-direction: column; gap: 14px; }
+.civilis-formulaire label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--gris-500); text-transform: uppercase; letter-spacing: 0.3px; }
+.civilis-formulaire input, .civilis-formulaire select {
+  font-family: inherit; font-size: 14px; font-weight: 400; text-transform: none; letter-spacing: normal; color: var(--gris-800);
+  padding: 10px 13px; border: 1.5px solid var(--gris-200); border-radius: 8px;
+  transition: border-color var(--transition-rapide), box-shadow var(--transition-rapide);
+}
+.civilis-formulaire input:focus, .civilis-formulaire select:focus {
+  outline: none; border-color: var(--bleu-600); box-shadow: 0 0 0 3px var(--bleu-100);
+}
+.civilis-formulaire-grille { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+@media (max-width: 700px) { .civilis-formulaire-grille { grid-template-columns: 1fr; } }
+
+.civilis-ligne-personne {
+  display: grid; grid-template-columns: 1fr 1fr 140px 32px; gap: 8px; align-items: center; margin-bottom: 8px;
+}
+.civilis-ligne-personne input, .civilis-ligne-personne select {
+  padding: 9px 11px; border: 1.5px solid var(--gris-200); border-radius: 7px; font-size: 13.5px; font-family: inherit;
+}
+
+.civilis-alerte-succes {
+  background: var(--vert-100); color: var(--vert-600); padding: 11px 15px; border-radius: 8px; font-size: 13px;
+  animation: entree-douce 220ms ease-out;
+}
+.civilis-alerte-erreur {
+  background: #fdecea; color: #a12b1f; border: 1px solid #f3c1ba; padding: 11px 15px; border-radius: 8px; font-size: 13px;
+  animation: entree-douce 220ms ease-out;
+}
+
+.civilis-carte-info { background: linear-gradient(160deg, var(--bleu-100), white); border-color: var(--bleu-100); }
+.civilis-carte-info p { font-size: 13px; color: var(--gris-500); line-height: 1.6; margin-bottom: 14px; }
