@@ -16,7 +16,7 @@ l'acte recherche : Collectivite -> Centre -> Salle d'archives -> Rayonnage
 - [x] Backend Spring Boot : structure, securite JWT, authentification
 - [x] Backend : module Recherche & Localisation (RG-REC-005/006/007, RG-LOC-001)
 - [x] Frontend React/TypeScript : ecran de connexion + ecran de recherche
-- [ ] Modules Indexation (creation de fiches), Registres, Personnes (CRUD complet)
+- [x] Modules Referentiels, Registres (deplacement+historique), Personnes (recherche+fusion), Indexation (creation transactionnelle)
 - [ ] RBAC dynamique, Administration, Audit, Pilotage, Parametrage
 - [ ] Palier 2 (numerisation), Palier 3 (front-office citoyen, bloque — RG-FO-001)
 

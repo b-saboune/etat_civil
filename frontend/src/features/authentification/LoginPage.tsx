@@ -21,9 +21,10 @@ export default function LoginPage() {
   return (
     <div className="civilis-login-shell">
       <div className="civilis-login-card">
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--civilis-bleu)' }}>CIVILIS</div>
-          <div style={{ fontSize: 12, color: '#777', marginTop: 4 }}>
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div className="civilis-login-logo">CV</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--bleu-800)', letterSpacing: 0.3 }}>CIVILIS</div>
+          <div style={{ fontSize: 12.5, color: 'var(--gris-500)', marginTop: 5 }}>
             Indexation et localisation des actes d'etat civil — Togo
           </div>
         </div>
@@ -55,6 +56,7 @@ export default function LoginPage() {
             />
           </div>
           <button type="submit" className="civilis-btn" style={{ width: '100%' }} disabled={chargement}>
+            {chargement && <span className="civilis-spinner" />}
             {chargement ? 'Connexion...' : 'Se connecter'}
           </button>
         </form>

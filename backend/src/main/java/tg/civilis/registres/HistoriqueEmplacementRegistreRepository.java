@@ -1,0 +1,9 @@
+package tg.civilis.registres;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface HistoriqueEmplacementRegistreRepository extends JpaRepository<HistoriqueEmplacementRegistre, Long> {
+    List<HistoriqueEmplacementRegistre> findByRegistreIdOrderByDateDeplacementDesc(Long registreId);
+}

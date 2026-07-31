@@ -29,8 +29,8 @@ export default function RecherchePage() {
   return (
     <div className="civilis-contenu">
       <div className="civilis-card">
-        <h2 style={{ marginTop: 0 }}>Rechercher un acte</h2>
-        <p style={{ color: '#777', fontSize: 13, marginTop: -8 }}>
+        <h2>Rechercher un acte</h2>
+        <p style={{ color: 'var(--gris-500)', fontSize: 13, marginTop: -2, marginBottom: 20 }}>
           La localisation physique complete (commune, centre, salle, rayonnage, registre, page)
           est toujours affichee avec chaque resultat.
         </p>
@@ -44,6 +44,7 @@ export default function RecherchePage() {
             <input id="prenoms" value={prenoms} onChange={(e) => setPrenoms(e.target.value)} placeholder="Kossi Edem" />
           </div>
           <button type="submit" className="civilis-btn" disabled={chargement}>
+            {chargement && <span className="civilis-spinner" />}
             {chargement ? 'Recherche...' : 'Rechercher'}
           </button>
         </form>
@@ -51,21 +52,37 @@ export default function RecherchePage() {
 
       {erreur && <div className="civilis-erreur">{erreur}</div>}
 
-      {aRecherche && !chargement && resultats && resultats.length === 0 && (
+      {chargement && (
+        <div className="civilis-card">
+          {[0, 1].map((i) => (
+            <div key={i} style={{ marginBottom: 18 }}>
+              <div className="civilis-skeleton" style={{ width: '40%', marginBottom: 8 }} />
+              <div className="civilis-skeleton" style={{ width: '70%' }} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!chargement && aRecherche && resultats && resultats.length === 0 && (
         <div className="civilis-card civilis-vide">
+          <div className="icone">⌕</div>
           Aucun acte ne correspond a cette recherche, meme approximativement.
         </div>
       )}
 
-      {resultats && resultats.length > 0 && (
+      {!chargement && resultats && resultats.length > 0 && (
         <div className="civilis-card">
-          <h3 style={{ marginTop: 0 }}>{resultats.length} resultat(s)</h3>
-          {resultats.map((r) => (
-            <div key={r.ficheIndexationId} className={`civilis-resultat ${r.correspondanceApprochee ? 'approchee' : ''}`}>
+          <h3 style={{ marginBottom: 16 }}>{resultats.length} resultat(s)</h3>
+          {resultats.map((r, index) => (
+            <div
+              key={r.ficheIndexationId}
+              className={`civilis-resultat ${r.correspondanceApprochee ? 'approchee' : ''}`}
+              style={{ animationDelay: `${index * 60}ms` }}
+            >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <strong>{r.typeActe}</strong> — Acte n° {r.numeroActe}
-                  <span style={{ color: '#888', marginLeft: 10, fontSize: 13 }}>
+                  <span style={{ color: 'var(--gris-500)', marginLeft: 10, fontSize: 13 }}>
                     {new Date(r.dateEvenement).toLocaleDateString('fr-FR')}
                   </span>
                 </div>
@@ -77,7 +94,7 @@ export default function RecherchePage() {
               <div className="civilis-personnes">
                 {r.personnesAssociees.map((p) => (
                   <span key={p.personneId} className="personne">
-                    {p.nom} {p.prenoms} <span className="role">({p.role})</span>
+                    {p.nom} {p.prenoms}<span className="role">{p.role}</span>
                   </span>
                 ))}
               </div>
