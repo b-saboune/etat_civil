@@ -406,3 +406,96 @@ body {
 
 .civilis-carte-info { background: linear-gradient(160deg, var(--bleu-100), white); border-color: var(--bleu-100); }
 .civilis-carte-info p { font-size: 13px; color: var(--gris-500); line-height: 1.6; margin-bottom: 14px; }
+
+/* ===================== Raffinements niveau expert — ergonomie institutionnelle ===================== */
+
+.civilis-avertissement {
+  display: flex; align-items: flex-start; gap: 8px; margin-top: 14px; padding: 10px 12px;
+  background: var(--ocre-100); color: var(--ocre-600); border-radius: 8px; font-size: 12px; line-height: 1.5;
+}
+.civilis-avertissement svg { flex-shrink: 0; margin-top: 1px; }
+
+.civilis-sidebar-tete { position: relative; }
+.civilis-sidebar-tete::after {
+  content: ''; position: absolute; left: 20px; right: 20px; bottom: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+}
+.civilis-logo {
+  position: relative;
+}
+.civilis-logo::before {
+  content: ''; position: absolute; inset: -6px; border-radius: 13px;
+  background: radial-gradient(circle, rgba(201,138,46,0.35), transparent 70%);
+  z-index: -1; opacity: 0; transition: opacity var(--transition-douce);
+}
+.civilis-sidebar-tete:hover .civilis-logo::before { opacity: 1; }
+
+.civilis-nav-item { position: relative; overflow: hidden; }
+.civilis-nav-item::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--ocre-600);
+  transform: scaleY(0); transition: transform var(--transition-rapide);
+}
+.civilis-nav-item.actif::before { transform: scaleY(1); }
+
+.civilis-sidebar-pied {
+  padding: 12px 20px 16px; font-size: 10px; color: rgba(255,255,255,0.35);
+  text-align: center; letter-spacing: 0.4px; border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.civilis-topbar-fine { box-shadow: 0 1px 0 rgba(10,31,61,0.04), 0 2px 8px rgba(10,31,61,0.03); }
+
+.civilis-btn:focus-visible, .civilis-nav-item:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--ocre-600); outline-offset: 2px;
+}
+
+.civilis-carte { transition: box-shadow var(--transition-rapide), transform var(--transition-rapide); }
+.civilis-kpi-carte { will-change: transform; }
+
+.civilis-emblem {
+  width: 72px; height: 72px; margin: 0 auto 14px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--ocre-600), var(--bleu-700) 75%);
+  display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 26px;
+  box-shadow: 0 0 0 4px rgba(255,255,255,0.06), 0 12px 30px rgba(10,31,61,0.45);
+  animation: flottement 5s ease-in-out infinite;
+}
+
+/* Transition douce a chaque changement de route */
+.civilis-contenu-transition { animation: entree-douce var(--transition-douce) ease-out; }
+
+/* Reduction de mouvement pour l'accessibilite */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+/* Sidebar responsive : devient un tiroir superpose sous 900px */
+@media (max-width: 900px) {
+  .civilis-shell { flex-direction: column; }
+  .civilis-sidebar {
+    position: fixed; top: 0; left: 0; height: 100vh; width: 240px;
+    transform: translateX(-100%); transition: transform var(--transition-douce);
+    z-index: 50;
+  }
+  .civilis-shell.mobile-ouvert .civilis-sidebar { transform: translateX(0); box-shadow: var(--ombre-lg); }
+  .civilis-corps { width: 100%; }
+  .civilis-page { padding: 20px 16px 40px; }
+  .civilis-kpi-grille { grid-template-columns: 1fr 1fr; }
+  .civilis-grille-graphiques, .civilis-grille-deux, .civilis-grille-tableaux { grid-template-columns: 1fr; }
+}
+
+.civilis-bouton-menu-mobile {
+  display: none;
+  background: none; border: none; color: var(--bleu-800); cursor: pointer; padding: 6px;
+}
+@media (max-width: 900px) {
+  .civilis-bouton-menu-mobile { display: inline-flex; align-items: center; }
+}
+
+.civilis-voile-mobile {
+  display: none;
+}
+@media (max-width: 900px) {
+  .civilis-shell.mobile-ouvert .civilis-voile-mobile {
+    display: block; position: fixed; inset: 0; background: rgba(10,31,61,0.4); z-index: 40;
+    animation: entree-douce 200ms ease-out;
+  }
+}

@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/agents")
 @Tag(name = "Utilisateurs (Agents)")
-@PreAuthorize("hasAnyRole('ADMINISTRATEUR', 'SUPER_ADMIN')")
+@PreAuthorize("hasAuthority('UTILISATEUR_GERER') or hasRole('SUPER_ADMIN')")
 public class AgentController {
 
     private final AgentService service;

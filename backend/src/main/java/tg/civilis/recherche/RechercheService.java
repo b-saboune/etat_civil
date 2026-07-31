@@ -10,6 +10,7 @@ import tg.civilis.registres.RegistrePhysique;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -84,9 +85,25 @@ public class RechercheService {
             }
         }
 
+        LocalDate dateDebut = parseDate(requete.dateDebut());
+        LocalDate dateFin = parseDate(requete.dateFin());
+
         return resultats.values().stream()
+            .filter(r -> requete.typeActe() == null || requete.typeActe().isBlank()
+                || r.typeActe().equalsIgnoreCase(requete.typeActe()))
+            .filter(r -> dateDebut == null || !r.dateEvenement().isBefore(dateDebut))
+            .filter(r -> dateFin == null || !r.dateEvenement().isAfter(dateFin))
             .sorted(Comparator.comparing(ResultatRechercheDTO::correspondanceApprochee))
             .toList();
+    }
+
+    private LocalDate parseDate(String valeur) {
+        if (valeur == null || valeur.isBlank()) return null;
+        try {
+            return LocalDate.parse(valeur.trim());
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private List<PersonneAssocieeDTO> trouverToutesPersonnesDeLaFiche(Long ficheId) {

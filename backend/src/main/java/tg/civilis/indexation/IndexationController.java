@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/indexation/fiches")
 @Tag(name = "Indexation")
-@PreAuthorize("hasAnyRole('AGENT', 'ADMINISTRATEUR', 'SUPER_ADMIN')")
+@PreAuthorize("hasAuthority('INDEXATION_CREER') or hasAuthority('INDEXATION_MODIFIER') or hasRole('SUPER_ADMIN')")
 public class IndexationController {
 
     private final IndexationService service;

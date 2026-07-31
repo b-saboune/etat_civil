@@ -18,11 +18,11 @@ public class ParametrageController {
     }
 
     @GetMapping("/api/parametres")
-    @PreAuthorize("hasAnyRole('ADMINISTRATEUR', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('PARAMETRAGE_GERER') or hasRole('SUPER_ADMIN')")
     public List<Parametre> lister() { return service.listerParametres(); }
 
     @PatchMapping("/api/parametres/{id}")
-    @PreAuthorize("hasAnyRole('ADMINISTRATEUR', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('PARAMETRAGE_GERER') or hasRole('SUPER_ADMIN')")
     public Parametre modifier(@PathVariable Long id, @RequestBody Map<String, String> corps) {
         return service.modifierParametre(id, corps.get("valeur"));
     }
@@ -32,7 +32,7 @@ public class ParametrageController {
     public Sauvegarde executer() { return service.executerSauvegardeManuelle(); }
 
     @GetMapping("/api/sauvegardes")
-    @PreAuthorize("hasAnyRole('ADMINISTRATEUR', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('PARAMETRAGE_GERER') or hasRole('SUPER_ADMIN')")
     public List<Sauvegarde> lister2() { return service.listerSauvegardes(); }
 
     @PostMapping("/api/sauvegardes/{id}/restaurer")

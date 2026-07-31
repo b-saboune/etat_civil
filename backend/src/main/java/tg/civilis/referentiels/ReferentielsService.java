@@ -41,6 +41,14 @@ public class ReferentielsService {
         return communeRepository.save(commune);
     }
 
+    @Transactional
+    public Commune modifierCommune(Long id, CommuneDTO dto) {
+        Commune commune = communeRepository.findById(id)
+            .orElseThrow(() -> ApiException.notFound("COMMUNE_INTROUVABLE", "Commune introuvable."));
+        commune.setNom(dto.nom());
+        return communeRepository.save(commune);
+    }
+
     @Transactional(readOnly = true)
     public List<CentreEtatCivil> listerCentres() { return centreRepository.findAll(); }
 
@@ -88,6 +96,14 @@ public class ReferentielsService {
         return salleRepository.save(salle);
     }
 
+    @Transactional
+    public SalleArchive modifierSalle(Long id, SalleDTO dto) {
+        SalleArchive salle = salleRepository.findById(id)
+            .orElseThrow(() -> ApiException.notFound("SALLE_INTROUVABLE", "Salle d'archives introuvable."));
+        salle.setDesignation(dto.designation());
+        return salleRepository.save(salle);
+    }
+
     @Transactional(readOnly = true)
     public List<Rayonnage> listerRayonnages() { return rayonnageRepository.findAll(); }
 
@@ -97,6 +113,14 @@ public class ReferentielsService {
             .orElseThrow(() -> ApiException.notFound("SALLE_INTROUVABLE", "Salle d'archives introuvable."));
         Rayonnage rayonnage = new Rayonnage();
         rayonnage.setSalle(salle);
+        rayonnage.setDesignation(dto.designation());
+        return rayonnageRepository.save(rayonnage);
+    }
+
+    @Transactional
+    public Rayonnage modifierRayonnage(Long id, RayonnageDTO dto) {
+        Rayonnage rayonnage = rayonnageRepository.findById(id)
+            .orElseThrow(() -> ApiException.notFound("RAYONNAGE_INTROUVABLE", "Rayonnage introuvable."));
         rayonnage.setDesignation(dto.designation());
         return rayonnageRepository.save(rayonnage);
     }

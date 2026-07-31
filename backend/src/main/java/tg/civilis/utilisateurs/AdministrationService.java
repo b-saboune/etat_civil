@@ -1,6 +1,8 @@
 package tg.civilis.utilisateurs;
 
 import tg.civilis.common.exception.ApiException;
+import tg.civilis.utilisateurs.dto.CreerAdministrateurRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,9 +20,11 @@ import java.util.List;
 public class AdministrationService {
 
     private final UtilisateurRepository utilisateurRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AdministrationService(UtilisateurRepository utilisateurRepository) {
+    public AdministrationService(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
         this.utilisateurRepository = utilisateurRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional(readOnly = true)
@@ -28,6 +32,19 @@ public class AdministrationService {
         return utilisateurRepository.findAll().stream()
             .filter(u -> "ADMINISTRATEUR".equals(u.getTypeCompte()))
             .toList();
+    }
+
+    @Transactional
+    public Utilisateur creerAdministrateur(CreerAdministrateurRequest requete) {
+        utilisateurRepository.findByIdentifiant(requete.identifiant()).ifPresent(u -> {
+            throw ApiException.conflict("IDENTIFIANT_EXISTANT", "Cet identifiant est deja utilise.");
+        });
+        Utilisateur admin = new Utilisateur();
+        admin.setIdentifiant(requete.identifiant());
+        admin.setMotDePasseHash(passwordEncoder.encode(requete.motDePasseInitial()));
+        admin.setTypeCompte("ADMINISTRATEUR");
+        admin.setStatut("ACTIF");
+        return utilisateurRepository.save(admin);
     }
 
     @Transactional

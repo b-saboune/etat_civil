@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from '@/auth/AuthContext'
 import { ProtectedRoute } from '@/auth/ProtectedRoute'
+import { useAuth } from '@/auth/AuthContext'
 import AppLayout from '@/layouts/AppLayout'
 import LoginPage from '@/features/authentification/LoginPage'
 import RecherchePage from '@/features/recherche/RecherchePage'
@@ -13,6 +14,7 @@ import JournalPage from '@/features/audit/JournalPage'
 import ParametragePage from '@/features/parametrage/ParametragePage'
 import PersonnesPage from '@/features/personnes/PersonnesPage'
 import IndexationPage from '@/features/indexation/IndexationPage'
+import AdministrationPage from '@/features/administration/AdministrationPage'
 
 function Protegee({ children }: { children: React.ReactNode }) {
   return (
@@ -20,6 +22,14 @@ function Protegee({ children }: { children: React.ReactNode }) {
       <AppLayout>{children}</AppLayout>
     </ProtectedRoute>
   )
+}
+
+function RedirectionAccueil() {
+  const { utilisateur, aPermission } = useAuth()
+  if (!utilisateur) return <Navigate to="/connexion" replace />
+  if (aPermission('PILOTAGE_CONSULTER')) return <Navigate to="/tableau-de-bord" replace />
+  if (aPermission('RECHERCHE_CONSULTER')) return <Navigate to="/recherche" replace />
+  return <Navigate to="/connexion" replace />
 }
 
 export default function App() {
@@ -38,7 +48,8 @@ export default function App() {
           <Route path="/roles-permissions" element={<Protegee><RolesPermissionsPage /></Protegee>} />
           <Route path="/journal" element={<Protegee><JournalPage /></Protegee>} />
           <Route path="/parametrage" element={<Protegee><ParametragePage /></Protegee>} />
-          <Route path="*" element={<Navigate to="/tableau-de-bord" replace />} />
+          <Route path="/administration" element={<Protegee><AdministrationPage /></Protegee>} />
+          <Route path="*" element={<RedirectionAccueil />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

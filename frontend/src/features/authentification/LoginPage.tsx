@@ -12,7 +12,7 @@ export default function LoginPage() {
     e.preventDefault()
     try {
       await connecter(identifiant, motDePasse)
-      navigate('/recherche')
+      navigate('/')
     } catch {
       // erreur deja geree et affichee via le contexte d'authentification
     }
@@ -22,10 +22,11 @@ export default function LoginPage() {
     <div className="civilis-login-shell">
       <div className="civilis-login-card">
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div className="civilis-login-logo">CV</div>
+          <div className="civilis-emblem">CV</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--bleu-800)', letterSpacing: 0.3 }}>CIVILIS</div>
           <div style={{ fontSize: 12.5, color: 'var(--gris-500)', marginTop: 5 }}>
-            Indexation et localisation des actes d'etat civil — Togo
+            Indexation et localisation des actes d'etat civil
+Republique togolaise
           </div>
         </div>
 

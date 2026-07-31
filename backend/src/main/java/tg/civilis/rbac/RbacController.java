@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @Tag(name = "RBAC - Roles et permissions")
-@PreAuthorize("hasAnyRole('ADMINISTRATEUR', 'SUPER_ADMIN')")
+@PreAuthorize("hasAuthority('ROLE_GERER') or hasRole('SUPER_ADMIN')")
 public class RbacController {
 
     private final RbacService service;

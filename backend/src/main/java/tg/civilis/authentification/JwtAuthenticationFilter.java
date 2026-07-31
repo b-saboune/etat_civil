@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -13,7 +15,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * RG-RBAC-002 / RG-AUTH-003 : les autorites Spring Security d'une requete
+ * combinent le role de base (ROLE_AGENT/ROLE_ADMINISTRATEUR/ROLE_SUPER_ADMIN,
+ * conserve pour les endpoints strictement reserves au Super Administrateur -
+ * RG-ADM-001/002) ET les codes de permission resolus dynamiquement depuis la
+ * matrice role_permission au moment de la connexion (claim "perms" du JWT).
+ * Aucune requete base supplementaire n'est necessaire ici : les permissions
+ * voyagent dans le token signe, ce qui satisfait RG-AUTH-003.
+ */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -41,8 +54,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (identifiant != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 CivilisUserDetails userDetails = (CivilisUserDetails) userDetailsService.loadUserByUsername(identifiant);
                 if (jwtService.estValide(token, identifiant)) {
-                    var authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
+                    List<GrantedAuthority> autorites = new ArrayList<>(userDetails.getAuthorities());
+                    for (String code : jwtService.extrairePermissions(token)) {
+                        autorites.add(new SimpleGrantedAuthority(code));
+                    }
+                    var authToken = new UsernamePasswordAuthenticationToken(userDetails, null, autorites);
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }

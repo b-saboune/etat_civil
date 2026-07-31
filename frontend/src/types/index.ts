@@ -57,8 +57,8 @@ export interface TableauBordDTO {
 
 export interface CommuneDTO { id: number; nom: string }
 export interface CentreDTO { id: number; communeId: number; nom: string; adresse?: string; statut: string }
-export interface SalleDTO { id: number; centreId: number; nom: string }
-export interface RayonnageDTO { id: number; salleId: number; code: string }
+export interface SalleDTO { id: number; centreId: number; designation: string }
+export interface RayonnageDTO { id: number; salleId: number; designation: string }
 export interface TypeActeDTO { id: number; libelle: string; actif: boolean }
 export interface RegistreDTO { id: number; centreId: number; rayonnageId: number; typeActeId: number; numeroRegistre: string; annee: number; nbPages: number; statut: string }
 export interface AgentDTO { id: number; identifiant: string; typeCompte: string; statut: string }

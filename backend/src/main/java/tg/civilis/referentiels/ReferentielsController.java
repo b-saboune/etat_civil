@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/referentiels")
 @Tag(name = "Referentiels")
-@PreAuthorize("hasAnyRole('ADMINISTRATEUR', 'SUPER_ADMIN')")
+@PreAuthorize("hasAuthority('REFERENTIEL_GERER') or hasRole('SUPER_ADMIN')")
 public class ReferentielsController {
 
     private final ReferentielsService service;
@@ -33,6 +33,11 @@ public class ReferentielsController {
     @PostMapping("/communes")
     @ResponseStatus(HttpStatus.CREATED)
     public Commune creerCommune(@Valid @RequestBody CommuneDTO dto) { return service.creerCommune(dto); }
+
+    @PatchMapping("/communes/{id}")
+    public Commune modifierCommune(@PathVariable Long id, @Valid @RequestBody CommuneDTO dto) {
+        return service.modifierCommune(id, dto);
+    }
 
     @GetMapping("/centres")
     public List<CentreEtatCivil> listerCentres() { return service.listerCentres(); }
@@ -54,12 +59,22 @@ public class ReferentielsController {
     @ResponseStatus(HttpStatus.CREATED)
     public SalleArchive creerSalle(@Valid @RequestBody SalleDTO dto) { return service.creerSalle(dto); }
 
+    @PatchMapping("/salles/{id}")
+    public SalleArchive modifierSalle(@PathVariable Long id, @Valid @RequestBody SalleDTO dto) {
+        return service.modifierSalle(id, dto);
+    }
+
     @GetMapping("/rayonnages")
     public List<Rayonnage> listerRayonnages() { return service.listerRayonnages(); }
 
     @PostMapping("/rayonnages")
     @ResponseStatus(HttpStatus.CREATED)
     public Rayonnage creerRayonnage(@Valid @RequestBody RayonnageDTO dto) { return service.creerRayonnage(dto); }
+
+    @PatchMapping("/rayonnages/{id}")
+    public Rayonnage modifierRayonnage(@PathVariable Long id, @Valid @RequestBody RayonnageDTO dto) {
+        return service.modifierRayonnage(id, dto);
+    }
 
     @GetMapping("/types-acte")
     public List<TypeActe> listerTypesActe() { return service.listerTypesActe(); }

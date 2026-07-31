@@ -3,6 +3,7 @@ package tg.civilis.authentification;
 import tg.civilis.authentification.dto.LoginRequest;
 import tg.civilis.authentification.dto.LoginResponse;
 import tg.civilis.authentification.dto.MeResponse;
+import tg.civilis.authentification.dto.RefreshRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.authentifier(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+        return ResponseEntity.ok(authService.rafraichir(request));
     }
 
     @GetMapping("/me")

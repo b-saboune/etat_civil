@@ -62,7 +62,7 @@ export default function ReferentielsPage() {
               <tbody>
                 {salles.map((s) => (
                   rayonnages.filter((r) => r.salleId === s.id).map((r) => (
-                    <tr key={r.id}><td>{s.nom}</td><td>{r.code}</td></tr>
+                    <tr key={r.id}><td>{s.designation}</td><td>{r.designation}</td></tr>
                   ))
                 ))}
               </tbody>
