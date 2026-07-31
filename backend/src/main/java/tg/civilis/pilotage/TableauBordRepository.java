@@ -2,12 +2,13 @@ package tg.civilis.pilotage;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
+import tg.civilis.indexation.FicheIndexation;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Map;
 
-public interface TableauBordRepository extends Repository<Object, Long> {
+public interface TableauBordRepository extends Repository<FicheIndexation, Long> {
 
     @Query(value = "SELECT count(*) FROM fiche_indexation", nativeQuery = true)
     long compterFiches();
