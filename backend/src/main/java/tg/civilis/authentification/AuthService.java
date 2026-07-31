@@ -56,19 +56,19 @@ public class AuthService {
             .orElseThrow(() -> ApiException.badRequest("AUTH_INVALIDE", "Identifiant ou mot de passe incorrect."));
 
         if ("VERROUILLE".equals(utilisateur.getStatut()) || "INACTIF".equals(utilisateur.getStatut())) {
-            enregistrerHistorique(utilisateur, "REFUSE");
+            enregistrerHistorique(utilisateur, "ECHOUEE");
             throw ApiException.forbidden("COMPTE_INDISPONIBLE", "Ce compte ne peut pas se connecter actuellement.");
         }
 
         if (!passwordEncoder.matches(request.motDePasse(), utilisateur.getMotDePasseHash())) {
             enregistrerEchec(utilisateur);
-            enregistrerHistorique(utilisateur, "ECHEC");
+            enregistrerHistorique(utilisateur, "ECHOUEE");
             throw ApiException.badRequest("AUTH_INVALIDE", "Identifiant ou mot de passe incorrect.");
         }
 
         utilisateur.setTentativesEchec(0);
         utilisateurRepository.save(utilisateur);
-        enregistrerHistorique(utilisateur, "SUCCES");
+        enregistrerHistorique(utilisateur, "REUSSIE");
 
         return construireReponse(utilisateur);
     }
