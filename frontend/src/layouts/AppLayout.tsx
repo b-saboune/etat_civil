@@ -17,6 +17,7 @@ import {
   ChevronRight,
   LogOut,
   Menu,
+  FileBarChart2,
 } from 'lucide-react'
 
 interface NavItem {
@@ -30,6 +31,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { to: '/tableau-de-bord', label: 'Tableau de bord', icon: <LayoutDashboard size={19} />, section: 'Pilotage', permission: 'PILOTAGE_CONSULTER' },
+  { to: '/rapports', label: 'Rapports', icon: <FileBarChart2 size={19} />, section: 'Pilotage', permission: 'PILOTAGE_CONSULTER' },
   { to: '/recherche', label: 'Recherche', icon: <Search size={19} />, section: 'Operations', permission: 'RECHERCHE_CONSULTER' },
   { to: '/indexation', label: 'Indexation', icon: <FileStack size={19} />, section: 'Operations', permission: 'INDEXATION_CREER' },
   { to: '/personnes', label: 'Personnes', icon: <Users size={19} />, section: 'Operations', permission: 'PERSONNE_GERER' },

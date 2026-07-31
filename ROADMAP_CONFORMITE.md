@@ -4,7 +4,74 @@ Ce document trace, honnetement, l'ecart entre le Prompt Maitre et le code a un i
 Objectif : que quiconque reprenne ce depot sache exactement ce qui est solide et ce qui reste a faire
 avant une mise en production reelle.
 
-## Corrige dans cette iteration
+## Corrige dans cette livraison (Palier 1 — completion demandee explicitement)
+
+- **RG-UTI-001 — affectation multi-centre** : entite/repo `UtilisateurCentre` (cle composite,
+  additive : un agent peut cumuler plusieurs centres), endpoints `POST/DELETE/GET
+  /api/agents/{id}/centres`, chips + selecteur dans l'ecran Agents.
+- **`PATCH /api/indexation/fiches/{id}`** : modification du numero d'acte, de la page, du type
+  d'acte et de la date d'evenement d'une fiche deja indexee (le registre et l'agent createur
+  restent non modifiables ici par design — un changement de registre passe par le deplacement
+  trace du module Registres, l'agent createur est une donnee de tracabilite RG-IDX-013).
+- **RG-IDX-011 — recensement en serie** : bascule explicite dans l'ecran Indexation qui conserve
+  le registre et le type d'acte entre deux fiches, focus automatique sur le numero d'acte apres
+  chaque enregistrement, compteur de fiches saisies dans la session, et tableau des fiches deja
+  indexees dans le registre courant (avec edition en ligne via le PATCH ci-dessus).
+- **RG-RAP-001 — module Rapports** : construit de zero (`Rapport`, `RapportRepository`,
+  `RapportService`, `RapportController`, ecran `RapportsPage`). Trois types geres
+  (`FICHES_PAR_CENTRE`, `FICHES_PAR_AGENT`, `REPARTITION_TYPE_ACTE`) sur une plage de dates. Chaque
+  rapport genere est fige : la colonne JSONB `criteres` porte a la fois les criteres de filtrage et
+  le resultat calcule au moment T (stocke via `@JdbcTypeCode(SqlTypes.JSON)`, natif Hibernate 6,
+  aucune dependance supplementaire) — consulter un rapport plus tard n'entraine jamais un
+  recalcul. Export CSV fonctionnel. Export PDF/XLSX explicitement refuse (400) avec message clair :
+  ces formats necessitent des bibliotheques (Apache POI, iText...) que cet environnement de build
+  ne pouvait pas telecharger (Maven Central inaccessible hors ligne dans ce sandbox) ; a ajouter
+  des qu'un environnement avec acces reseau complet est disponible.
+- **RG-PAR-001 — restauration reelle** : `pg_dump`/`pg_restore` executes en sous-processus
+  (format custom `-Fc`), remplacant l'ancienne implementation qui n'ecrivait ni ne lisait jamais
+  de vrai fichier. La sauvegarde manuelle produit desormais un fichier reel avec taille exacte ;
+  la restauration exige une phrase de confirmation exacte (`RESTAURER LA BASE DE DONNEES`),
+  verifiee cote serveur (pas seulement cosmetique cote client), reste strictement reservee au
+  role SUPER_ADMIN, et l'action est journalisee avec l'identite reelle de l'auteur. Necessite que
+  les binaires `pg_dump`/`pg_restore` de PostgreSQL soient presents sur le PATH du serveur qui
+  execute le backend (hypothese standard, a verifier en production).
+- **RG-UTI-005 — politique de mot de passe** : minimum 8 caracteres + une lettre + un chiffre,
+  appliquee via `@Pattern` sur les trois points d'entree (creation agent, creation administrateur,
+  reinitialisation de mot de passe).
+- **RG-ADM-001 — bootstrap SUPER_ADMIN** : compte cree via `V3__bootstrap_super_admin.sql`
+  (migration Flyway, donc strictement hors API), identifiants transmis separement.
+- **Affectation de role a un agent** : `UtilisateurRole`/`UtilisateurRoleRepository`,
+  `POST/GET /api/agents/{id}/roles`, selecteur dans l'ecran Agents.
+- **Correctif de securite** : `Utilisateur.motDePasseHash` n'avait aucun `@JsonIgnore` — le hash
+  BCrypt du mot de passe de chaque agent/administrateur/super admin fuitait dans toute reponse
+  JSON exposant un objet `Utilisateur` (liste des agents, fiche d'indexation via `agent`, rapport
+  via `utilisateur`...). Corrige d'un seul endroit (l'entite), benefice immediat partout.
+- **Correctif de securite (RG-IDX-013)** : `agentId` etait un champ fourni par le client dans
+  `POST /api/indexation/fiches`, ce qui permettait a un agent authentifie d'indexer une fiche sous
+  l'identite d'un collegue. L'auteur est desormais toujours derive du token JWT authentifie
+  (`SecurityContextHolder`), jamais d'une valeur envoyee par le navigateur.
+- **Correctif structurel** : `UtilisateurRole` (cree lors du lot precedent) declarait une colonne
+  `id` auto-generee qui n'existe pas dans la table reelle (`utilisateur_role` a une cle composite
+  `(utilisateur_id, role_id)`, sans surrogate id) — ce qui aurait fait planter Hibernate au
+  demarrage ou lors du moindre insert. Corrige via `@IdClass` (meme pattern applique a la nouvelle
+  entite `UtilisateurCentre`, qui a la meme forme de table).
+- **Correctif critique (portee large)** : `spring.jpa.open-in-view` etait a `false` alors que
+  plusieurs controleurs (registres, indexation, rapports...) renvoient directement des entites
+  JPA portant des associations `@ManyToOne(LAZY)` jamais explicitement chargees. Une fois la
+  transaction fermee, Jackson aurait leve une `LazyInitializationException` des que ces listes
+  contenaient des lignes reelles (probleme latent qui touchait potentiellement `GET /api/registres`
+  et d'autres listes deja existantes, pas seulement le code ajoute ici). Corrige en reactivant
+  `open-in-view` (compromis documente dans `application.yml`) et, en complement, en initialisant
+  explicitement les associations critiques dans les nouveaux services (`Hibernate.initialize`).
+  Un remede plus propre (DTO partout, aucune entite JPA exposee directement) reste souhaitable a
+  terme mais depasse le cadre de ce lot.
+- **Verification de types complete (`tsc --noEmit`)** : executee avec succes cette fois
+  (contrainte de temps d'infrastructure levee), aucune erreur de type sur l'ensemble du frontend.
+  Un `npm run build` complet (bundling Rollup/esbuild) n'a en revanche pas pu etre mene a son terme
+  dans le temps imparti par cet environnement de build precis ; a rejouer par l'utilisateur avant
+  mise en service pour lever tout doute residuel sur le bundle final.
+
+## Corrige dans l'iteration precedente
 
 - **RBAC reellement dynamique (RG-RBAC-002, RG-AUTH-003)** : les autorisations ne reposent plus
   uniquement sur `type_compte`. A la connexion, les permissions du/des role(s) affectes a
@@ -52,43 +119,44 @@ avant une mise en production reelle.
 
 ## Ecart encore ouvert (a traiter avant mise en production)
 
-- **RG-RAP-001 — module Rapports** : totalement absent (pas de generation ni d'export
-  PDF/XLSX/CSV). A construire de zero (`RapportController`, `RapportService`, ecran dedie).
-- **RG-PAR-001 — restauration de sauvegarde** : `ParametrageService.restaurer` verifie l'existence
-  de la sauvegarde mais n'effectue aucune restauration reelle. Une vraie restauration de base de
-  donnees est une operation a haut risque qui merite sa propre conception (fenetre de maintenance,
-  confirmation renforcee, tests sur environnement isole) plutot qu'un correctif rapide.
-- **RG-IDX-011 — mode recensement en serie** : la conservation du registre selectionne entre deux
-  fiches consecutives n'existe ni cote backend ni cote frontend.
-- **`PATCH /api/indexation/fiches/{id}`** : seules la creation et le marquage "erronee" existent ;
-  la modification generale d'une fiche indexee n'est pas implementee.
-- **RG-UTI-001 — affectation multi-centre depuis l'UI** : la table `utilisateur_centre` est
-  peuplee par les jeux de donnees de demonstration mais aucun endpoint ne permet de la gerer
-  depuis l'application.
+- **Export PDF/XLSX des rapports** : seul le CSV est disponible (voir justification ci-dessus,
+  Apache POI/iText non telechargeables hors ligne dans cet environnement de build). L'export CSV
+  reste neanmoins pleinement exploitable (ouvrable dans tout tableur).
+- **Migration vers des DTO systematiques** : plusieurs controleurs renvoient encore des entites
+  JPA directement (contournement via `open-in-view: true`, voir plus haut). Fonctionnellement
+  correct, mais une refonte vers des DTO explicites partout serait plus saine architecturalement
+  et eviterait de reactiver open-in-view.
 - **Palier 2 (numerisation) et Palier 3 (front-office, RG-FO-001)** : non demarres, par choix
   deliberement conforme a l'ordre impose par le Prompt Maitre (§7, §10.6, §13) — la recette
   globale du Palier 1 doit etre validee avant d'ouvrir le Palier 2, et RG-FO-001 interdit tout
   developpement du Palier 3 sans confirmation explicite separee.
-- **Verification de build complete (`mvn compile`/`tsc -b`)** dans cette iteration precise :
-  l'environnement d'execution utilise pour ce lot n'avait plus Maven installe ni acces reseau
-  pour le reinstaller (sandbox reinitialise). Les fichiers modifies ont ete relus manuellement et
-  le fichier frontend touche a ete verifie avec `esbuild` (verification syntaxique), mais aucune
-  compilation Java complete n'a pu etre executee ce tour-ci. A rejouer imperativement :
-  `mvn -q compile` cote backend avant toute mise en service.
-- **Verification de types complete (`tsc -b`)** avant cette livraison : l'environnement de build
-  utilise pour cette iteration n'a pas permis de faire aboutir un `tsc -b` complet dans le temps
-  imparti (timeouts d'infrastructure, sans rapport avec le code). `vite build` (qui transpile et
-  valide la syntaxe/les imports de l'ensemble des modules) a reussi sans erreur, mais un
-  `npm run build` complet (avec `tsc -b`) doit etre rejoue avant toute mise en production pour
-  lever le doute sur un eventuel type incorrect non detecte par esbuild.
+- **Verification de build backend complete (`mvn compile`)** : l'environnement de build de cette
+  session n'a ni Maven pre-installe, ni acces reseau vers Maven Central (seul le miroir Ubuntu
+  `archive.ubuntu.com` est autorise). Maven a ete reconstruit manuellement a partir de paquets
+  `.deb` pour verifier au moins que l'outil fonctionne, mais la resolution des dependances Spring
+  Boot elles-memes reste impossible hors ligne. Tous les fichiers Java modifies ont ete relus
+  manuellement (equilibrage des accolades/parentheses verifie automatiquement, coherence des
+  imports et des signatures verifiee a la main) ; **`mvn compile` doit imperativement etre rejoue
+  par l'utilisateur** (qui a un acces reseau normal) avant toute mise en service.
+- **`npm run build` (bundle Rollup/esbuild complet)** : `tsc --noEmit` a reussi sans aucune erreur
+  sur l'ensemble du frontend (verification de types complete, contrainte de temps levee cette
+  fois). Le bundling complet (`vite build`) n'a en revanche pas pu se terminer dans le temps
+  imparti par cet environnement precis ; chaque fichier touche a neanmoins ete verifie
+  individuellement avec `esbuild` (transpilation + validation syntaxique). A rejouer par
+  l'utilisateur pour confirmation finale du bundle de production.
 
 ## Recommandation avant mise en service reelle
 
-1. Rejouer `npm run build` (avec `tsc -b`) et `mvn test` sur un poste avec un temps de build non
-   contraint, et corriger toute erreur de type residuelle.
-2. Traiter le module Rapports (RG-RAP-001) si le jury/l'utilisateur final en a besoin des la
-   premiere mise en service.
-3. Concevoir serieusement RG-PAR-001 (restauration) avant de l'exposer a un Super Administrateur
-   en environnement reel — ne pas se contenter d'un bouton qui ne fait rien.
+1. Rejouer `mvn compile` (backend) et `npm run build` (frontend) sur un poste avec acces reseau
+   normal, et corriger toute erreur residuelle que cet environnement de build restreint n'a pas pu
+   detecter lui-meme.
+2. Verifier que `pg_dump` et `pg_restore` (version PostgreSQL correspondante) sont bien presents
+   sur le PATH du serveur qui execute le backend — condition necessaire au bon fonctionnement des
+   sauvegardes/restaurations reelles ajoutees dans cette livraison (RG-PAR-001/002). Faire un essai
+   de sauvegarde puis de restauration sur une base de test avant de s'y fier en production.
+3. Changer immediatement le mot de passe du compte `superadmin` (bootstrap RG-ADM-001) des la
+   premiere connexion.
 4. Ajouter des tests automatises (aucun test unitaire/integration n'existe a ce stade au-dela de
    la verification manuelle) — risque majeur pour une mise en production serieuse.
+5. Envisager, a terme, la migration des controleurs restants vers des DTO explicites plutot que
+   des entites JPA directement serialisees (voir "Ecart encore ouvert").

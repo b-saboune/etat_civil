@@ -505,3 +505,30 @@ body {
   font-size: 0.85rem; background: #fff; color: var(--bleu-800, #0a1f3d);
 }
 .civilis-texte-discret { color: var(--gris-400, #98a2b3); font-size: 0.85rem; }
+
+.civilis-chips-centres { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.civilis-chip {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px;
+  border-radius: 999px; background: var(--bleu-100, #e6edf7); color: var(--bleu-800, #0a1f3d);
+  font-size: 0.72rem; white-space: nowrap;
+}
+.civilis-chip button { background: none; border: none; cursor: pointer; color: inherit; display: inline-flex; padding: 0; }
+.civilis-chip button:hover { color: var(--rouge-600, #b42318); }
+
+.civilis-bascule-serie {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  padding: 10px 14px; background: var(--bleu-050, #f2f6fc); border-radius: 8px;
+  font-size: 0.85rem; color: var(--gris-700, #344054); flex-wrap: wrap;
+}
+.civilis-interrupteur { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+.civilis-interrupteur input { opacity: 0; width: 0; height: 0; }
+.civilis-interrupteur-glissiere {
+  position: absolute; cursor: pointer; inset: 0; background: var(--gris-300, #d0d5dd);
+  transition: 0.2s; border-radius: 999px;
+}
+.civilis-interrupteur-glissiere::before {
+  position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px;
+  background: white; transition: 0.2s; border-radius: 50%;
+}
+.civilis-interrupteur input:checked + .civilis-interrupteur-glissiere { background: var(--vert-600, #12b76a); }
+.civilis-interrupteur input:checked + .civilis-interrupteur-glissiere::before { transform: translateX(16px); }

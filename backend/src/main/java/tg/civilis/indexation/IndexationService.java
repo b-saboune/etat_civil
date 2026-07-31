@@ -3,6 +3,7 @@ package tg.civilis.indexation;
 import tg.civilis.common.exception.ApiException;
 import tg.civilis.indexation.dto.CreerFicheIndexationRequest;
 import tg.civilis.indexation.dto.MarquerErroneeRequest;
+import tg.civilis.indexation.dto.ModifierFicheIndexationRequest;
 import tg.civilis.indexation.dto.PersonneAssocieeRequest;
 import tg.civilis.personnes.Personne;
 import tg.civilis.personnes.PersonneRepository;
@@ -56,12 +57,12 @@ public class IndexationService {
     }
 
     @Transactional
-    public FicheIndexation creerFiche(CreerFicheIndexationRequest requete) {
+    public FicheIndexation creerFiche(CreerFicheIndexationRequest requete, Long agentId) {
         RegistrePhysique registre = registreRepository.findById(requete.registreId())
             .orElseThrow(() -> ApiException.notFound("REGISTRE_INTROUVABLE", "Registre introuvable."));
         TypeActe typeActe = typeActeRepository.findById(requete.typeActeId())
             .orElseThrow(() -> ApiException.notFound("TYPE_ACTE_INTROUVABLE", "Type d'acte introuvable."));
-        Utilisateur agent = utilisateurRepository.findById(requete.agentId())
+        Utilisateur agent = utilisateurRepository.findById(agentId)
             .orElseThrow(() -> ApiException.notFound("UTILISATEUR_INTROUVABLE", "Agent introuvable."));
 
         FicheIndexation fiche = new FicheIndexation();
@@ -105,6 +106,24 @@ public class IndexationService {
         return personneRepository.save(personne);
     }
 
+    /**
+     * Correctif : open-in-view est desactive (application.yml), donc les
+     * associations @ManyToOne(LAZY) non touchees ici deviendraient des
+     * proxys Hibernate non initialisables lors de la serialisation JSON,
+     * une fois la transaction fermee (LazyInitializationException). On les
+     * initialise explicitement pendant que la session est encore ouverte.
+     */
+    @Transactional(readOnly = true)
+    public java.util.List<FicheIndexation> listerParRegistre(Long registreId) {
+        java.util.List<FicheIndexation> fiches = ficheRepository.findByRegistreIdOrderByDateIndexationDesc(registreId);
+        fiches.forEach(f -> {
+            org.hibernate.Hibernate.initialize(f.getRegistre());
+            org.hibernate.Hibernate.initialize(f.getTypeActe());
+            org.hibernate.Hibernate.initialize(f.getAgent());
+        });
+        return fiches;
+    }
+
     @Transactional
     public FicheIndexation marquerErronee(Long ficheId, MarquerErroneeRequest requete) {
         FicheIndexation fiche = ficheRepository.findById(ficheId)
@@ -112,5 +131,32 @@ public class IndexationService {
         fiche.setStatut("ERRONEE");
         fiche.setMotifErreur(requete.motif());
         return ficheRepository.save(fiche);
+    }
+
+    /**
+     * Modification generale d'une fiche deja indexee. Le registre et
+     * l'agent createur ne sont volontairement pas modifiables ici : un
+     * changement de registre passe par le module Registres (deplacement
+     * trace), et l'agent createur est une donnee de tracabilite (RG-IDX-013).
+     */
+    @Transactional
+    public FicheIndexation modifierFiche(Long ficheId, ModifierFicheIndexationRequest requete) {
+        FicheIndexation fiche = ficheRepository.findById(ficheId)
+            .orElseThrow(() -> ApiException.notFound("FICHE_INTROUVABLE", "Fiche d'indexation introuvable."));
+        TypeActe typeActe = typeActeRepository.findById(requete.typeActeId())
+            .orElseThrow(() -> ApiException.notFound("TYPE_ACTE_INTROUVABLE", "Type d'acte introuvable."));
+
+        fiche.setNumeroActe(requete.numeroActe());
+        fiche.setPage(requete.page());
+        fiche.setTypeActe(typeActe);
+        fiche.setDateEvenement(requete.dateEvenement());
+
+        try {
+            return ficheRepository.saveAndFlush(fiche);
+        } catch (DataIntegrityViolationException ex) {
+            // RG-IDX-008 : contrainte uq_fiche_registre_numero violee.
+            throw ApiException.conflict("ACTE_DEJA_INDEXE",
+                "Un acte avec ce numero existe deja dans ce registre. Verifiez le numero avant de reessayer.");
+        }
     }
 }

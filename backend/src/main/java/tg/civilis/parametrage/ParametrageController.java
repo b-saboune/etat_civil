@@ -1,8 +1,10 @@
 package tg.civilis.parametrage;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import tg.civilis.parametrage.dto.ConfirmerRestaurationRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -37,5 +39,7 @@ public class ParametrageController {
 
     @PostMapping("/api/sauvegardes/{id}/restaurer")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public void restaurer(@PathVariable Long id) { service.restaurer(id); }
+    public void restaurer(@PathVariable Long id, @Valid @RequestBody ConfirmerRestaurationRequest requete) {
+        service.restaurer(id, requete);
+    }
 }

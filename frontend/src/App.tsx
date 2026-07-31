@@ -15,6 +15,7 @@ import ParametragePage from '@/features/parametrage/ParametragePage'
 import PersonnesPage from '@/features/personnes/PersonnesPage'
 import IndexationPage from '@/features/indexation/IndexationPage'
 import AdministrationPage from '@/features/administration/AdministrationPage'
+import RapportsPage from '@/features/rapports/RapportsPage'
 
 function Protegee({ children }: { children: React.ReactNode }) {
   return (
@@ -39,6 +40,7 @@ export default function App() {
         <Routes>
           <Route path="/connexion" element={<LoginPage />} />
           <Route path="/tableau-de-bord" element={<Protegee><TableauDeBordPage /></Protegee>} />
+          <Route path="/rapports" element={<Protegee><RapportsPage /></Protegee>} />
           <Route path="/recherche" element={<Protegee><RecherchePage /></Protegee>} />
           <Route path="/indexation" element={<Protegee><IndexationPage /></Protegee>} />
           <Route path="/personnes" element={<Protegee><PersonnesPage /></Protegee>} />

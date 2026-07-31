@@ -5,6 +5,9 @@ import tg.civilis.rbac.Role;
 import tg.civilis.rbac.RoleRepository;
 import tg.civilis.rbac.UtilisateurRole;
 import tg.civilis.rbac.UtilisateurRoleRepository;
+import tg.civilis.referentiels.CentreEtatCivil;
+import tg.civilis.referentiels.CentreEtatCivilRepository;
+import tg.civilis.utilisateurs.dto.AffecterCentreRequest;
 import tg.civilis.utilisateurs.dto.AssignerRoleRequest;
 import tg.civilis.utilisateurs.dto.CreerAgentRequest;
 import tg.civilis.utilisateurs.dto.ReinitialiserMotDePasseRequest;
@@ -31,17 +34,23 @@ public class AgentService {
     private final PasswordEncoder passwordEncoder;
     private final UtilisateurRoleRepository utilisateurRoleRepository;
     private final RoleRepository roleRepository;
+    private final UtilisateurCentreRepository utilisateurCentreRepository;
+    private final CentreEtatCivilRepository centreEtatCivilRepository;
 
     public AgentService(UtilisateurRepository utilisateurRepository,
                          HistoriqueConnexionRepository historiqueRepository,
                          PasswordEncoder passwordEncoder,
                          UtilisateurRoleRepository utilisateurRoleRepository,
-                         RoleRepository roleRepository) {
+                         RoleRepository roleRepository,
+                         UtilisateurCentreRepository utilisateurCentreRepository,
+                         CentreEtatCivilRepository centreEtatCivilRepository) {
         this.utilisateurRepository = utilisateurRepository;
         this.historiqueRepository = historiqueRepository;
         this.passwordEncoder = passwordEncoder;
         this.utilisateurRoleRepository = utilisateurRoleRepository;
         this.roleRepository = roleRepository;
+        this.utilisateurCentreRepository = utilisateurCentreRepository;
+        this.centreEtatCivilRepository = centreEtatCivilRepository;
     }
 
     @Transactional(readOnly = true)
@@ -116,6 +125,37 @@ public class AgentService {
     @Transactional(readOnly = true)
     public List<Long> rolesDeLAgent(Long agentId) {
         return utilisateurRoleRepository.trouverRoleIdsParUtilisateur(agentId);
+    }
+
+    /**
+     * RG-UTI-001 : un agent peut etre affecte a plusieurs centres. Contrairement
+     * au role (un seul a la fois), l'affectation centre est additive : on
+     * ajoute une association sans retirer les precedentes.
+     */
+    @Transactional
+    public void affecterCentre(Long agentId, AffecterCentreRequest requete) {
+        Utilisateur agent = trouver(agentId);
+        CentreEtatCivil centre = centreEtatCivilRepository.findById(requete.centreId())
+            .orElseThrow(() -> ApiException.notFound("CENTRE_INTROUVABLE", "Centre introuvable."));
+        boolean dejaAffecte = utilisateurCentreRepository.trouverCentreIdsParUtilisateur(agentId)
+            .contains(requete.centreId());
+        if (dejaAffecte) {
+            return;
+        }
+        UtilisateurCentre association = new UtilisateurCentre();
+        association.setUtilisateur(agent);
+        association.setCentre(centre);
+        utilisateurCentreRepository.save(association);
+    }
+
+    @Transactional
+    public void retirerCentre(Long agentId, Long centreId) {
+        utilisateurCentreRepository.deleteByUtilisateurIdAndCentreId(agentId, centreId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> centresDeLAgent(Long agentId) {
+        return utilisateurCentreRepository.trouverCentreIdsParUtilisateur(agentId);
     }
 
     private Utilisateur trouver(Long id) {

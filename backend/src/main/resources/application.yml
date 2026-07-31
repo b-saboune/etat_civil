@@ -6,7 +6,18 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    open-in-view: false
+    # Correctif de conformite : plusieurs controleurs renvoient directement
+    # des entites JPA portant des associations @ManyToOne(LAZY) jamais
+    # touchees avant serialisation (ex. GET /api/registres, GET
+    # /api/indexation/fiches, GET /api/rapports/{id}). Avec open-in-view a
+    # false, Jackson les serialise apres la fermeture de la session Hibernate
+    # -> LazyInitializationException des que ces listes contiennent des
+    # lignes reelles. Le remede propre serait de faire transiter chaque
+    # reponse par un DTO explicite (aucune association lazy jamais exposee) ;
+    # en attendant cette refonte plus large, on reactive open-in-view pour
+    # garantir que l'application fonctionne reellement, quitte a perdre en
+    # purete architecturale le temps de la migration vers des DTO partout.
+    open-in-view: true
     properties:
       hibernate:
         format_sql: true
@@ -22,6 +33,11 @@ server:
     include-binding-errors: always
 
 civilis:
+  sauvegardes:
+    # RG-PAR-001/RG-PAR-002 : dossier local ou pg_dump ecrit les sauvegardes
+    # et ou pg_restore va chercher le fichier a restaurer. A pointer vers un
+    # stockage durable (volume monte) en production.
+    dossier: ${CIVILIS_SAUVEGARDES_DOSSIER:./sauvegardes}
   jwt:
     secret: ${CIVILIS_JWT_SECRET:changeme-dev-secret-change-in-production-please-0123456789}
     access-token-minutes: 30

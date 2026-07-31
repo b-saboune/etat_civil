@@ -6,7 +6,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface UtilisateurRoleRepository extends JpaRepository<UtilisateurRole, Long> {
+public interface UtilisateurRoleRepository extends JpaRepository<UtilisateurRole, UtilisateurRoleId> {
 
     void deleteByUtilisateurId(Long utilisateurId);
 

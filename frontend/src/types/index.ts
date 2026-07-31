@@ -61,6 +61,18 @@ export interface SalleDTO { id: number; centreId: number; designation: string }
 export interface RayonnageDTO { id: number; salleId: number; designation: string }
 export interface TypeActeDTO { id: number; libelle: string; actif: boolean }
 export interface RegistreDTO { id: number; centreId: number; rayonnageId: number; typeActeId: number; numeroRegistre: string; annee: number; nbPages: number; statut: string }
+export interface FicheIndexationDTO {
+  id: number
+  registre: { id: number }
+  numeroActe: string
+  page: number
+  typeActe: { id: number; libelle: string }
+  dateEvenement: string
+  dateIndexation: string
+  agent: { id: number; identifiant: string }
+  statut: string
+  motifErreur?: string
+}
 export interface AgentDTO { id: number; identifiant: string; typeCompte: string; statut: string }
 export interface RoleDTO { id: number; libelle: string; description?: string }
 export interface PermissionDTO { id: number; module: string; action: string; code: string }
@@ -68,3 +80,7 @@ export interface JournalEntreeDTO { id: number; utilisateur?: string; module: st
 export interface ParametreDTO { id: number; cle: string; valeur: string; description?: string }
 export interface SauvegardeDTO { id: number; dateExecution: string; statut: string; typeDeclenchement: string }
 export interface PersonneDTO { id: number; nom: string; prenoms: string; sexe?: string; dateNaissance?: string; dateApproximative: boolean }
+
+export interface RapportResumeDTO { id: number; type: string; genereParIdentifiant: string; dateGeneration: string }
+export interface RapportSnapshot { criteres: { dateDebut: string; dateFin: string; centreId: number | null }; colonnes: string[]; lignes: (string | number)[][] }
+export interface RapportDTO { id: number; type: string; criteres: string; dateGeneration: string }

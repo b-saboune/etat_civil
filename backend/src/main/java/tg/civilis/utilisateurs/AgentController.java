@@ -1,5 +1,6 @@
 package tg.civilis.utilisateurs;
 
+import tg.civilis.utilisateurs.dto.AffecterCentreRequest;
 import tg.civilis.utilisateurs.dto.AssignerRoleRequest;
 import tg.civilis.utilisateurs.dto.CreerAgentRequest;
 import tg.civilis.utilisateurs.dto.ReinitialiserMotDePasseRequest;
@@ -57,5 +58,20 @@ public class AgentController {
     @GetMapping("/{id}/roles")
     public List<Long> roles(@PathVariable Long id) {
         return service.rolesDeLAgent(id);
+    }
+
+    @PostMapping("/{id}/centres")
+    public void affecterCentre(@PathVariable Long id, @Valid @RequestBody AffecterCentreRequest requete) {
+        service.affecterCentre(id, requete);
+    }
+
+    @DeleteMapping("/{id}/centres/{centreId}")
+    public void retirerCentre(@PathVariable Long id, @PathVariable Long centreId) {
+        service.retirerCentre(id, centreId);
+    }
+
+    @GetMapping("/{id}/centres")
+    public List<Long> centres(@PathVariable Long id) {
+        return service.centresDeLAgent(id);
     }
 }

@@ -1,5 +1,6 @@
 package tg.civilis.utilisateurs;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,12 @@ public class Utilisateur {
     @Column(nullable = false, unique = true, length = 100)
     private String identifiant;
 
+    // Correctif de securite : ce champ ne doit jamais quitter le backend, meme
+    // sous forme de hash BCrypt (fuite qui faciliterait une attaque hors ligne).
+    // Toutes les entites qui exposaient un Utilisateur complet en reponse JSON
+    // (agents, fiches d'indexation via agent, rapports via utilisateur...)
+    // beneficient de cette correction sans autre changement de leur cote.
+    @JsonIgnore
     @Column(name = "mot_de_passe_hash", nullable = false, length = 255)
     private String motDePasseHash;
 

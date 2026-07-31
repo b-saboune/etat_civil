@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { apiClient } from '@/api/client'
-import type { AgentDTO, RoleDTO } from '@/types'
-import { UserCog, Unlock, KeyRound, UserPlus, UserX, UserCheck } from 'lucide-react'
+import type { AgentDTO, RoleDTO, CentreDTO } from '@/types'
+import { UserCog, Unlock, KeyRound, UserPlus, UserX, UserCheck, Building2, X } from 'lucide-react'
 
 export default function UtilisateursPage() {
   const [agents, setAgents] = useState<AgentDTO[]>([])
@@ -13,6 +13,8 @@ export default function UtilisateursPage() {
   const [message, setMessage] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
   const [roles, setRoles] = useState<RoleDTO[]>([])
   const [rolesParAgent, setRolesParAgent] = useState<Record<number, number | ''>>({})
+  const [centres, setCentres] = useState<CentreDTO[]>([])
+  const [centresParAgent, setCentresParAgent] = useState<Record<number, number[]>>({})
 
   const charger = () => {
     apiClient.get<AgentDTO[]>('/agents').then(({ data }) => {
@@ -21,6 +23,9 @@ export default function UtilisateursPage() {
         apiClient.get<number[]>(`/agents/${a.id}/roles`).then(({ data: ids }) => {
           setRolesParAgent((prev) => ({ ...prev, [a.id]: ids[0] ?? '' }))
         })
+        apiClient.get<number[]>(`/agents/${a.id}/centres`).then(({ data: ids }) => {
+          setCentresParAgent((prev) => ({ ...prev, [a.id]: ids }))
+        })
       })
     }).finally(() => setChargement(false))
   }
@@ -28,7 +33,29 @@ export default function UtilisateursPage() {
   useEffect(() => {
     charger()
     apiClient.get<RoleDTO[]>('/roles').then(({ data }) => setRoles(data))
+    apiClient.get<CentreDTO[]>('/referentiels/centres').then(({ data }) => setCentres(data))
   }, [])
+
+  const affecterCentre = async (agentId: number, centreId: number) => {
+    if (!centreId) return
+    setActionEnCours(agentId)
+    try {
+      await apiClient.post(`/agents/${agentId}/centres`, { centreId })
+      setCentresParAgent((prev) => ({ ...prev, [agentId]: [...(prev[agentId] ?? []), centreId] }))
+    } finally {
+      setActionEnCours(null)
+    }
+  }
+
+  const retirerCentre = async (agentId: number, centreId: number) => {
+    setActionEnCours(agentId)
+    try {
+      await apiClient.delete(`/agents/${agentId}/centres/${centreId}`)
+      setCentresParAgent((prev) => ({ ...prev, [agentId]: (prev[agentId] ?? []).filter((id) => id !== centreId) }))
+    } finally {
+      setActionEnCours(null)
+    }
+  }
 
   const affecterRole = async (agentId: number, roleId: number) => {
     setActionEnCours(agentId)
@@ -91,7 +118,7 @@ export default function UtilisateursPage() {
             <div className="civilis-skeleton" style={{ height: 220 }} />
           ) : (
             <table className="civilis-tableau">
-              <thead><tr><th>Identifiant</th><th>Type</th><th>Role</th><th>Statut</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Identifiant</th><th>Type</th><th>Role</th><th>Centres (RG-UTI-001)</th><th>Statut</th><th>Actions</th></tr></thead>
               <tbody>
                 {agents.map((a) => (
                   <tr key={a.id} className="civilis-entree-echelonnee">
@@ -110,6 +137,39 @@ export default function UtilisateursPage() {
                             <option key={r.id} value={r.id}>{r.libelle}</option>
                           ))}
                         </select>
+                      ) : (
+                        <span className="civilis-texte-discret">—</span>
+                      )}
+                    </td>
+                    <td>
+                      {a.typeCompte === 'AGENT' ? (
+                        <div className="civilis-chips-centres">
+                          {(centresParAgent[a.id] ?? []).map((cid) => {
+                            const centre = centres.find((c) => c.id === cid)
+                            return (
+                              <span key={cid} className="civilis-chip">
+                                <Building2 size={11} />
+                                {centre?.nom ?? cid}
+                                <button type="button" onClick={() => retirerCentre(a.id, cid)} title="Retirer">
+                                  <X size={11} />
+                                </button>
+                              </span>
+                            )
+                          })}
+                          <select
+                            value=""
+                            disabled={actionEnCours === a.id}
+                            onChange={(e) => e.target.value && affecterCentre(a.id, Number(e.target.value))}
+                            className="civilis-select-compact"
+                          >
+                            <option value="">+ Affecter...</option>
+                            {centres
+                              .filter((c) => !(centresParAgent[a.id] ?? []).includes(c.id))
+                              .map((c) => (
+                                <option key={c.id} value={c.id}>{c.nom}</option>
+                              ))}
+                          </select>
+                        </div>
                       ) : (
                         <span className="civilis-texte-discret">—</span>
                       )}
@@ -142,7 +202,7 @@ export default function UtilisateursPage() {
                     </td>
                   </tr>
                 ))}
-                {agents.length === 0 && <tr><td colSpan={5} className="civilis-vide">Aucun agent enregistre.</td></tr>}
+                {agents.length === 0 && <tr><td colSpan={6} className="civilis-vide">Aucun agent enregistre.</td></tr>}
               </tbody>
             </table>
           )}
