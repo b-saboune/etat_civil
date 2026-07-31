@@ -9,7 +9,7 @@ import tg.civilis.authentification.CivilisUserDetails;
 
 /**
  * RG-AUD-002 : aspect transversal, seul point d'ecriture du journal cote
- * services d'ecriture (creer*/deplacer/fusionner/marquer*). Volontairement
+ * services d'ecriture (creer, deplacer, fusionner, marquer). Volontairement
  * simple pour Palier 1 : consigne la classe et la methode appelees.
  */
 @Aspect
