@@ -35,6 +35,20 @@ avant une mise en production reelle.
   de l'utilisateur connecte. Ecran Super Administration ajoute (creation/suspension/revocation de
   comptes Administrateur). Sidebar responsive (tiroir mobile sous 900px), transitions de page,
   emblem institutionnel sur l'ecran de connexion, etats de focus accessibles.
+- **Affectation de role a un agent** : il etait possible de creer des roles et d'editer leurs
+  permissions, mais aucune voie n'existait pour rattacher un role a un agent precis (la table
+  `utilisateur_role` n'avait ni entite JPA ni endpoint). Ajout de `UtilisateurRole`/
+  `UtilisateurRoleRepository`, de `POST /api/agents/{id}/roles` et `GET /api/agents/{id}/roles`,
+  et d'un selecteur de role par ligne dans l'ecran Agents.
+- **RG-UTI-005 — politique de mot de passe** : le Prompt Maitre laissait la decision ouverte.
+  Decision retenue : minimum 8 caracteres, au moins une lettre et un chiffre, appliquee via
+  `@Pattern` sur les trois points d'entree (creation agent, creation administrateur,
+  reinitialisation de mot de passe). Documente ici pour tracabilite de la decision produit.
+- **RG-ADM-001 — bootstrap du compte SUPER_ADMIN** : creation via une migration Flyway
+  (`V3__bootstrap_super_admin.sql`), donc strictement hors de toute API applicative, conformement
+  a l'exigence. Identifiants transmis separement a l'utilisateur (voir message de livraison) ;
+  le mot de passe doit etre change des la premiere connexion, aucune politique de renouvellement
+  force n'etant appliquee automatiquement.
 
 ## Ecart encore ouvert (a traiter avant mise en production)
 
@@ -51,8 +65,16 @@ avant une mise en production reelle.
 - **RG-UTI-001 — affectation multi-centre depuis l'UI** : la table `utilisateur_centre` est
   peuplee par les jeux de donnees de demonstration mais aucun endpoint ne permet de la gerer
   depuis l'application.
-- **RG-UTI-005 — politique de mot de passe** : explicitement laisse ouvert par le Prompt Maitre
-  (decision produit non tranchee) ; aucune contrainte de complexite n'est donc imposee cote API.
+- **Palier 2 (numerisation) et Palier 3 (front-office, RG-FO-001)** : non demarres, par choix
+  deliberement conforme a l'ordre impose par le Prompt Maitre (§7, §10.6, §13) — la recette
+  globale du Palier 1 doit etre validee avant d'ouvrir le Palier 2, et RG-FO-001 interdit tout
+  developpement du Palier 3 sans confirmation explicite separee.
+- **Verification de build complete (`mvn compile`/`tsc -b`)** dans cette iteration precise :
+  l'environnement d'execution utilise pour ce lot n'avait plus Maven installe ni acces reseau
+  pour le reinstaller (sandbox reinitialise). Les fichiers modifies ont ete relus manuellement et
+  le fichier frontend touche a ete verifie avec `esbuild` (verification syntaxique), mais aucune
+  compilation Java complete n'a pu etre executee ce tour-ci. A rejouer imperativement :
+  `mvn -q compile` cote backend avant toute mise en service.
 - **Verification de types complete (`tsc -b`)** avant cette livraison : l'environnement de build
   utilise pour cette iteration n'a pas permis de faire aboutir un `tsc -b` complet dans le temps
   imparti (timeouts d'infrastructure, sans rapport avec le code). `vite build` (qui transpile et

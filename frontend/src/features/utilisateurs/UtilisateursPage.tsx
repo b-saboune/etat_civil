@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { apiClient } from '@/api/client'
-import type { AgentDTO } from '@/types'
+import type { AgentDTO, RoleDTO } from '@/types'
 import { UserCog, Unlock, KeyRound, UserPlus, UserX, UserCheck } from 'lucide-react'
 
 export default function UtilisateursPage() {
@@ -11,12 +11,34 @@ export default function UtilisateursPage() {
   const [motDePasse, setMotDePasse] = useState('')
   const [enCoursCreation, setEnCoursCreation] = useState(false)
   const [message, setMessage] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
+  const [roles, setRoles] = useState<RoleDTO[]>([])
+  const [rolesParAgent, setRolesParAgent] = useState<Record<number, number | ''>>({})
 
   const charger = () => {
-    apiClient.get<AgentDTO[]>('/agents').then(({ data }) => setAgents(data)).finally(() => setChargement(false))
+    apiClient.get<AgentDTO[]>('/agents').then(({ data }) => {
+      setAgents(data)
+      data.filter((a) => a.typeCompte === 'AGENT').forEach((a) => {
+        apiClient.get<number[]>(`/agents/${a.id}/roles`).then(({ data: ids }) => {
+          setRolesParAgent((prev) => ({ ...prev, [a.id]: ids[0] ?? '' }))
+        })
+      })
+    }).finally(() => setChargement(false))
   }
 
-  useEffect(charger, [])
+  useEffect(() => {
+    charger()
+    apiClient.get<RoleDTO[]>('/roles').then(({ data }) => setRoles(data))
+  }, [])
+
+  const affecterRole = async (agentId: number, roleId: number) => {
+    setActionEnCours(agentId)
+    try {
+      await apiClient.post(`/agents/${agentId}/roles`, { roleId })
+      setRolesParAgent((prev) => ({ ...prev, [agentId]: roleId }))
+    } finally {
+      setActionEnCours(null)
+    }
+  }
 
   const creer = async (e: FormEvent) => {
     e.preventDefault()
@@ -69,12 +91,29 @@ export default function UtilisateursPage() {
             <div className="civilis-skeleton" style={{ height: 220 }} />
           ) : (
             <table className="civilis-tableau">
-              <thead><tr><th>Identifiant</th><th>Type</th><th>Statut</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Identifiant</th><th>Type</th><th>Role</th><th>Statut</th><th>Actions</th></tr></thead>
               <tbody>
                 {agents.map((a) => (
                   <tr key={a.id} className="civilis-entree-echelonnee">
                     <td>{a.identifiant}</td>
                     <td>{a.typeCompte}</td>
+                    <td>
+                      {a.typeCompte === 'AGENT' ? (
+                        <select
+                          value={rolesParAgent[a.id] ?? ''}
+                          disabled={actionEnCours === a.id}
+                          onChange={(e) => e.target.value && affecterRole(a.id, Number(e.target.value))}
+                          className="civilis-select-compact"
+                        >
+                          <option value="">— Aucun —</option>
+                          {roles.map((r) => (
+                            <option key={r.id} value={r.id}>{r.libelle}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span className="civilis-texte-discret">—</span>
+                      )}
+                    </td>
                     <td><span className={`civilis-badge ${a.statut === 'ACTIF' ? 'succes' : a.statut === 'VERROUILLE' ? 'alerte' : 'neutre'}`}>{a.statut}</span></td>
                     <td className="civilis-actions-cellule">
                       {a.statut === 'VERROUILLE' && (
@@ -103,7 +142,7 @@ export default function UtilisateursPage() {
                     </td>
                   </tr>
                 ))}
-                {agents.length === 0 && <tr><td colSpan={4} className="civilis-vide">Aucun agent enregistre.</td></tr>}
+                {agents.length === 0 && <tr><td colSpan={5} className="civilis-vide">Aucun agent enregistre.</td></tr>}
               </tbody>
             </table>
           )}

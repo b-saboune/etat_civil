@@ -499,3 +499,9 @@ body {
     animation: entree-douce 200ms ease-out;
   }
 }
+
+.civilis-select-compact {
+  padding: 4px 8px; border-radius: 6px; border: 1px solid var(--gris-300, #d0d5dd);
+  font-size: 0.85rem; background: #fff; color: var(--bleu-800, #0a1f3d);
+}
+.civilis-texte-discret { color: var(--gris-400, #98a2b3); font-size: 0.85rem; }

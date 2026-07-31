@@ -1,5 +1,6 @@
 package tg.civilis.utilisateurs;
 
+import tg.civilis.utilisateurs.dto.AssignerRoleRequest;
 import tg.civilis.utilisateurs.dto.CreerAgentRequest;
 import tg.civilis.utilisateurs.dto.ReinitialiserMotDePasseRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,5 +47,15 @@ public class AgentController {
     @GetMapping("/{id}/historique-connexion")
     public List<HistoriqueConnexion> historique(@PathVariable Long id) {
         return service.historiqueConnexion(id);
+    }
+
+    @PostMapping("/{id}/roles")
+    public void assignerRole(@PathVariable Long id, @Valid @RequestBody AssignerRoleRequest requete) {
+        service.assignerRole(id, requete);
+    }
+
+    @GetMapping("/{id}/roles")
+    public List<Long> roles(@PathVariable Long id) {
+        return service.rolesDeLAgent(id);
     }
 }
