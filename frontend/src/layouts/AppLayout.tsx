@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '@/auth/AuthContext'
+import NotificationCloche from '@/components/NotificationCloche'
 import {
   LayoutDashboard,
   Search,
@@ -115,12 +116,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </div>
           </div>
           {utilisateur && (
-            <div className="civilis-utilisateur-chip">
-              <div className="civilis-avatar">{initiales}</div>
-              <span>{utilisateur.identifiant} · {utilisateur.typeCompte}</span>
-              <button className="civilis-btn secondaire civilis-btn-icone" onClick={deconnecter} title="Deconnexion">
-                <LogOut size={15} />
-              </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <NotificationCloche />
+              <div className="civilis-utilisateur-chip">
+                <div className="civilis-avatar">{initiales}</div>
+                <span>{utilisateur.identifiant} · {utilisateur.typeCompte}</span>
+                <button className="civilis-btn secondaire civilis-btn-icone" onClick={deconnecter} title="Deconnexion">
+                  <LogOut size={15} />
+                </button>
+              </div>
             </div>
           )}
         </header>

@@ -84,3 +84,13 @@ export interface PersonneDTO { id: number; nom: string; prenoms: string; sexe?: 
 export interface RapportResumeDTO { id: number; type: string; genereParIdentifiant: string; dateGeneration: string }
 export interface RapportSnapshot { criteres: { dateDebut: string; dateFin: string; centreId: number | null }; colonnes: string[]; lignes: (string | number)[][] }
 export interface RapportDTO { id: number; type: string; criteres: string; dateGeneration: string }
+
+export interface NotificationDTO {
+  id: number
+  niveau: 'INFORMATION' | 'ATTENTION' | 'CRITIQUE'
+  module: string
+  message: string
+  lien?: string
+  dateCreation: string
+  lu: boolean
+}

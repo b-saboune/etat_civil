@@ -653,3 +653,34 @@ body {
 /* Fil d'ariane cliquable dans la topbar : renforce la navigation transversale */
 .civilis-fil-ariane a { color: inherit; text-decoration: none; border-bottom: 1px dotted transparent; transition: border-color var(--transition-rapide); }
 .civilis-fil-ariane a:hover { border-color: currentColor; }
+
+/* ===================== Notifications internes (section 20/46 Prompt V3) ===================== */
+
+.civilis-notif-conteneur { position: relative; }
+.civilis-notif-bouton { position: relative; }
+.civilis-notif-pastille {
+  position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px; padding: 0 3px;
+  background: var(--togo-rouge, #d21034); color: white; border-radius: 999px;
+  font-size: 9.5px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  line-height: 1; box-shadow: 0 0 0 2px white;
+}
+.civilis-notif-menu {
+  position: absolute; top: calc(100% + 8px); right: 0; width: 340px; max-height: 380px; overflow-y: auto;
+  background: white; border: 1px solid var(--gris-200); border-radius: 10px; box-shadow: var(--ombre-lg);
+  z-index: 60; animation: entree-douce 180ms ease-out;
+}
+.civilis-notif-titre { padding: 12px 16px; font-size: 12.5px; font-weight: 700; color: var(--bleu-900); border-bottom: 1px solid var(--gris-100); }
+.civilis-notif-item {
+  display: flex; gap: 10px; width: 100%; text-align: left; padding: 12px 16px; border: none; background: none;
+  border-bottom: 1px solid var(--gris-100); cursor: pointer; transition: background var(--transition-rapide);
+}
+.civilis-notif-item:last-child { border-bottom: none; }
+.civilis-notif-item:hover { background: var(--gris-50); }
+.civilis-notif-item.lue { opacity: 0.55; }
+.civilis-notif-icone { flex-shrink: 0; margin-top: 1px; }
+.civilis-notif-item.niveau-information .civilis-notif-icone { color: var(--bleu-600); }
+.civilis-notif-item.niveau-attention .civilis-notif-icone { color: var(--ocre-600); }
+.civilis-notif-item.niveau-critique .civilis-notif-icone { color: var(--togo-rouge, #d21034); }
+.civilis-notif-corps { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.civilis-notif-message { font-size: 12.5px; color: var(--gris-800); line-height: 1.4; }
+.civilis-notif-date { font-size: 10.5px; color: var(--gris-500); }

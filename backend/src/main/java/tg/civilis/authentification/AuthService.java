@@ -4,6 +4,7 @@ import tg.civilis.authentification.dto.LoginRequest;
 import tg.civilis.authentification.dto.LoginResponse;
 import tg.civilis.authentification.dto.RefreshRequest;
 import tg.civilis.common.exception.ApiException;
+import tg.civilis.notifications.NotificationInterneService;
 import tg.civilis.rbac.PermissionRepository;
 import tg.civilis.rbac.RolePermissionRepository;
 import tg.civilis.utilisateurs.HistoriqueConnexion;
@@ -38,16 +39,19 @@ public class AuthService {
     private final RolePermissionRepository rolePermissionRepository;
     private final PermissionRepository permissionRepository;
     private final HistoriqueConnexionRepository historiqueConnexionRepository;
+    private final NotificationInterneService notificationInterneService;
 
     public AuthService(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
                         RolePermissionRepository rolePermissionRepository, PermissionRepository permissionRepository,
-                        HistoriqueConnexionRepository historiqueConnexionRepository) {
+                        HistoriqueConnexionRepository historiqueConnexionRepository,
+                        NotificationInterneService notificationInterneService) {
         this.utilisateurRepository = utilisateurRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.rolePermissionRepository = rolePermissionRepository;
         this.permissionRepository = permissionRepository;
         this.historiqueConnexionRepository = historiqueConnexionRepository;
+        this.notificationInterneService = notificationInterneService;
     }
 
     @Transactional
@@ -111,6 +115,10 @@ public class AuthService {
         utilisateur.setTentativesEchec(tentatives);
         if (tentatives >= MAX_TENTATIVES_ECHEC) {
             utilisateur.setStatut("VERROUILLE");
+            // Section 20/46 du Prompt Maitre V3 : notification -> contexte -> action.
+            notificationInterneService.diffuser("ATTENTION", "SECURITE",
+                "Le compte \"" + utilisateur.getIdentifiant() + "\" a ete verrouille apres " + MAX_TENTATIVES_ECHEC + " tentatives echouees.",
+                "/utilisateurs");
         }
         utilisateurRepository.save(utilisateur);
     }

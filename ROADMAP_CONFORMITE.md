@@ -4,6 +4,50 @@ Ce document trace, honnetement, l'ecart entre le Prompt Maitre et le code a un i
 Objectif : que quiconque reprenne ce depot sache exactement ce qui est solide et ce qui reste a faire
 avant une mise en production reelle.
 
+## Prompt Maitre V3 (Strategic Government-Grade Edition) — audit Palier 1
+
+Le Prompt Maitre V3 redefinit CIVILIS avec un perimetre tres large (70 sections). Sa propre
+section 1 impose de distinguer V1 (indispensable), V1+ (forte valeur, optionnel), Palier 2 et
+Palier 3, et d'eviter la sur-ingenierie. Sa section 50 fixe la liste exacte du "Palier 1 — CIVILIS
+CORE" : authentification, utilisateurs, RBAC, centres, registres, archives, personnes, indexation,
+recherche, localisation, tableau de bord, rapports, audit, notifications, sauvegarde, parametres.
+
+### Etat du Palier 1 CORE face a cette liste
+
+- authentification, utilisateurs, RBAC, centres, registres, personnes, indexation, recherche,
+  localisation, tableau de bord, rapports, audit, sauvegarde, parametres : **deja livres** dans
+  les iterations precedentes (voir sections ci-dessous).
+- **notifications** : seul point reellement absent de la liste V1 core. Corrige dans cette
+  livraison : table `notification_interne` (V4, distincte de la table `notification` de V1 qui
+  concerne exclusivement les demandeurs citoyens du Palier 3), `NotificationInterneService`,
+  cloche avec compteur non lu dans la topbar, trois niveaux (INFORMATION/ATTENTION/CRITIQUE,
+  section 20), avec deux declencheurs reels branches sur des evenements existants : compte
+  verrouille apres echecs (RG-UTI-009) et echec de sauvegarde pg_dump (RG-PAR-002). Chaque
+  notification porte un lien de contexte -> action (section 46), pas de polling continu (coherent
+  avec le monolithe modulaire vise section 53).
+- "archives" en tant que concept distinct des registres n'est pas une entite technique separee
+  dans le modele actuel : les tables `salle_archive`/`rayonnage`/`centre_etat_civil` couvrent deja
+  la hierarchie physique (section 7, Archive Digital Twin). La visualisation dediee (cartographie
+  colorée, section 17) reste un item V1+ (voir plus bas), pas V1 core au sens strict de la liste.
+
+### Elements V1+ du Prompt V3 (forte valeur, explicitement optionnels) — non traites ce tour-ci
+
+Classes ainsi par le prompt lui-meme (section 51) : recherche tolerante (deja partiellement
+couverte par `pg_trgm`), detection des doublons (fusion manuelle deja possible, moteur de
+detection automatique absent), Archive Health Score, Data Quality Center, Archive Digital Twin
+(visualisation), guide de localisation pas-a-pas, analyse des recherches sans resultat, Command
+Center. Aucun n'est requis pour declarer le Palier 1 core complet ; ils sont conserves comme
+recommandations priorisees pour un prochain lot, conformement a la regle anti-sur-ingenierie de
+la section 1 du prompt lui-meme.
+
+### Renforcement UX/UI (sections 28-34) appliqué sans casser l'existant
+
+- Page de connexion alignee sur le gabarit de la section 34 : case "Afficher le mot de passe",
+  pied "Systeme securise · Version 1.x" + date du jour, formulation exacte de la sous-devise.
+- Le ruban tricolore et les animations ajoutes lors de la refonte precedente sont conserves (la
+  consigne explicite de l'utilisateur etait de renforcer "sans casser ce qui est la") ; ils
+  respectent deja les durees courtes recommandees section 31 (150-320ms), pas d'effet "gaming".
+
 ## Corrige dans cette livraison (Palier 1 — completion demandee explicitement)
 
 - **RG-UTI-001 — affectation multi-centre** : entite/repo `UtilisateurCentre` (cle composite,

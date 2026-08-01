@@ -1,6 +1,7 @@
 package tg.civilis.parametrage;
 
 import tg.civilis.audit.JournalActiviteService;
+import tg.civilis.notifications.NotificationInterneService;
 import tg.civilis.common.exception.ApiException;
 import tg.civilis.parametrage.dto.ConfirmerRestaurationRequest;
 import org.slf4j.Logger;
@@ -45,6 +46,7 @@ public class ParametrageService {
     private final SauvegardeRepository sauvegardeRepository;
     private final JournalActiviteService journalActiviteService;
     private final UtilisateurRepository utilisateurRepository;
+    private final NotificationInterneService notificationInterneService;
 
     @Value("${spring.datasource.url}")
     private String datasourceUrl;
@@ -59,11 +61,13 @@ public class ParametrageService {
     private String dossierSauvegardes;
 
     public ParametrageService(ParametreRepository parametreRepository, SauvegardeRepository sauvegardeRepository,
-                               JournalActiviteService journalActiviteService, UtilisateurRepository utilisateurRepository) {
+                               JournalActiviteService journalActiviteService, UtilisateurRepository utilisateurRepository,
+                               NotificationInterneService notificationInterneService) {
         this.parametreRepository = parametreRepository;
         this.sauvegardeRepository = sauvegardeRepository;
         this.journalActiviteService = journalActiviteService;
         this.utilisateurRepository = utilisateurRepository;
+        this.notificationInterneService = notificationInterneService;
     }
 
     @Transactional(readOnly = true)
@@ -119,6 +123,9 @@ public class ParametrageService {
                 sauvegarde.setStatut("ECHOUEE");
                 sauvegarde.setChemin(chemin.toAbsolutePath().toString());
                 LOG.error("Echec de pg_dump (sauvegarde {}). Sortie : {}", type, sortie);
+                notificationInterneService.diffuser("CRITIQUE", "PARAMETRAGE",
+                    "La sauvegarde " + type.toLowerCase() + " a echoue (pg_dump). Verifiez immediatement l'etat du systeme.",
+                    "/parametrage");
             }
         } catch (IOException | InterruptedException e) {
             // pg_dump absent du PATH, ou processus interrompu : on consigne
@@ -127,6 +134,9 @@ public class ParametrageService {
             Thread.currentThread().interrupt();
             sauvegarde.setStatut("ECHOUEE");
             LOG.error("Impossible d'executer pg_dump : {}", e.getMessage());
+            notificationInterneService.diffuser("CRITIQUE", "PARAMETRAGE",
+                "La sauvegarde " + type.toLowerCase() + " a echoue : pg_dump est introuvable ou a ete interrompu.",
+                "/parametrage");
         }
 
         return sauvegardeRepository.save(sauvegarde);
