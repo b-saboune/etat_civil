@@ -5,6 +5,7 @@ import tg.civilis.indexation.dto.CreerFicheIndexationRequest;
 import tg.civilis.indexation.dto.MarquerErroneeRequest;
 import tg.civilis.indexation.dto.ModifierFicheIndexationRequest;
 import tg.civilis.indexation.dto.PersonneAssocieeRequest;
+import tg.civilis.personnes.LienParenteService;
 import tg.civilis.personnes.Personne;
 import tg.civilis.personnes.PersonneRepository;
 import tg.civilis.referentiels.TypeActe;
@@ -41,19 +42,22 @@ public class IndexationService {
     private final RegistrePhysiqueRepository registreRepository;
     private final TypeActeRepository typeActeRepository;
     private final UtilisateurRepository utilisateurRepository;
+    private final LienParenteService lienParenteService;
 
     public IndexationService(FicheIndexationRepository ficheRepository,
                               AssociationPersonneActeRepository associationRepository,
                               PersonneRepository personneRepository,
                               RegistrePhysiqueRepository registreRepository,
                               TypeActeRepository typeActeRepository,
-                              UtilisateurRepository utilisateurRepository) {
+                              UtilisateurRepository utilisateurRepository,
+                              LienParenteService lienParenteService) {
         this.ficheRepository = ficheRepository;
         this.associationRepository = associationRepository;
         this.personneRepository = personneRepository;
         this.registreRepository = registreRepository;
         this.typeActeRepository = typeActeRepository;
         this.utilisateurRepository = utilisateurRepository;
+        this.lienParenteService = lienParenteService;
     }
 
     @Transactional
@@ -81,6 +85,7 @@ public class IndexationService {
                 "Un acte avec ce numero existe deja dans ce registre. Verifiez le numero avant de reessayer.");
         }
 
+        java.util.List<AssociationPersonneActe> associationsEnregistrees = new java.util.ArrayList<>();
         for (PersonneAssocieeRequest personneRequete : requete.personnesAssociees()) {
             Personne personne = resoudrePersonne(personneRequete);
 
@@ -88,8 +93,13 @@ public class IndexationService {
             association.setPersonne(personne);
             association.setFicheIndexation(fiche);
             association.setRole(personneRequete.role());
-            associationRepository.save(association);
+            associationsEnregistrees.add(associationRepository.save(association));
         }
+
+        // Deduit automatiquement les liens de filiation (PERE/MERE <-> ENFANT)
+        // quand la fiche porte les roles correspondants (typiquement un acte
+        // de naissance) — voir LienParenteService pour le detail.
+        lienParenteService.deriverDepuisFiche(associationsEnregistrees);
 
         return fiche;
     }

@@ -94,3 +94,13 @@ export interface NotificationDTO {
   dateCreation: string
   lu: boolean
 }
+
+// Affiliation / filiation (section 11.7 du prompt maitre) : voir backend LienParente.
+export interface LienParenteDTO {
+  id: number
+  personneApparenteeId: number
+  nomApparente: string
+  prenomsApparente: string
+  typeLien: string
+  modeCreation: 'DEDUIT' | 'MANUEL'
+}

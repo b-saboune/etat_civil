@@ -569,7 +569,11 @@ body {
 }
 
 /* Sidebar : ruban tricolore discret + etoile institutionnelle sur le logo */
-.civilis-sidebar { position: relative; }
+/* Bug corrige : cette regle redeclarait "position: relative" sur .civilis-sidebar,
+   qui ecrasait le "position: sticky" pose plus haut (meme specificite, regle plus
+   bas dans le fichier = elle gagne) -> le menu de gauche perdait son ancrage et
+   defilait avec la page. Inutile de toute facon : sticky sert deja de contexte de
+   positionnement pour le ::before ci-dessous, pas besoin de repasser par relative. */
 .civilis-sidebar::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
   background: linear-gradient(90deg, var(--togo-vert), var(--togo-jaune), var(--togo-rouge));
@@ -690,9 +694,14 @@ body {
 /* Bug constate : .civilis-carte n'avait aucune gestion d'overflow. Un tableau
    large (ex. Agents & utilisateurs : Identifiant/Type/Role/Centres/Statut/Actions)
    forcait alors la carte, puis toute la page, a deborder horizontalement au lieu
-   de faire defiler uniquement la zone du tableau. Filet de securite supplementaire
-   au niveau du document pour ne plus jamais avoir de scrollbar horizontale globale. */
-html, body, #root, .civilis-app, .civilis-shell { max-width: 100%; overflow-x: clip; }
+   de faire defiler uniquement la zone du tableau.
+   ATTENTION : le filet de securite avait ete pose par erreur sur html/body/.civilis-shell,
+   qui sont les ancetres de .civilis-sidebar (position: sticky). Poser overflow-x
+   (meme "clip") sur un ancetre d'un element sticky casse son ancrage -> c'est ce
+   qui a rendu le menu de gauche "non fige" (il defilait avec la page). Corrige en
+   ne touchant plus jamais aux ancetres du sidebar : le filet ne porte que sur
+   .civilis-corps (le frere du sidebar dans .civilis-shell, deja min-width:0). */
+.civilis-corps { overflow-x: clip; }
 .civilis-contenu { overflow-x: hidden; }
 .civilis-carte { overflow-x: auto; }
 .civilis-carte table.civilis-tableau { min-width: 100%; }
@@ -748,3 +757,6 @@ html, body, #root, .civilis-app, .civilis-shell { max-width: 100%; overflow-x: c
 @media (max-width: 480px) {
   .civilis-toast-pile { left: 12px; right: 12px; top: 12px; max-width: none; }
 }
+
+/* ----- Affiliations / filiation (Personnes) ----- */
+.civilis-liste-candidats { display: flex; flex-wrap: wrap; gap: 6px; }

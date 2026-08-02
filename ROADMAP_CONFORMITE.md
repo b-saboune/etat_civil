@@ -4,6 +4,51 @@ Ce document trace, honnetement, l'ecart entre le Prompt Maitre et le code a un i
 Objectif : que quiconque reprenne ce depot sache exactement ce qui est solide et ce qui reste a faire
 avant une mise en production reelle.
 
+## Regression sidebar + fonctionnalite d'affiliation absente (retour utilisateur, 2e passage)
+
+### Regression introduite par le lot precedent : menu de gauche non fige
+
+Le filet de securite anti-debordement du lot precedent (`overflow-x: clip` pose
+sur `html, body, #root, .civilis-app, .civilis-shell`) a casse le
+`position: sticky` de `.civilis-sidebar` : poser une valeur d'overflow autre que
+`visible` sur un ANCETRE d'un element sticky annule son ancrage. Le menu de
+gauche defilait donc avec le reste de la page. Une seconde cause, preexistante
+celle-la (round "wow" anterieur), aggravait le probleme : une regle plus bas
+dans le fichier (`.civilis-sidebar { position: relative; }`, ajoutee pour le
+ruban tricolore) ecrasait le `position: sticky` d'origine, meme sans le filet
+de securite. Corrige des deux cotes : le filet ne porte plus que sur
+`.civilis-corps` (le frere du sidebar dans `.civilis-shell`, pas un ancetre),
+et la regle `position: relative` superflue a ete supprimee (sticky sert deja
+de contexte de positionnement pour le `::before` du ruban).
+
+### Fonctionnalite "affiliation" prevue depuis l'origine mais jamais implementee
+
+Retour utilisateur : "je ne vois pas la partie qui parle de l'affiliation
+ainsi la recherche par affiliation". Verification faite : c'est fonde. Le
+prompt maitre (section 11.7 et 11.9) prevoit explicitement un "support de la
+recherche par affiliation" et un parametre `roleAffiliation` sur
+`GET /api/recherche`. Le schema V1 contient meme deja la table
+`lien_parente` (personne_id, personne_apparentee_id, type_lien, mode_creation)
+— mais aucune entite JPA, aucun repository, aucun service, aucun controleur,
+aucun ecran n'avait jamais ete construit dessus. Corrige :
+
+- Backend : entite `LienParente` + `LienParenteRepository` + `LienParenteService`
+  (`GET /api/personnes/{id}/liens`, `POST /api/personnes/liens`).
+- Deduction automatique : `IndexationService.creerFiche` appelle desormais
+  `LienParenteService.deriverDepuisFiche(...)` juste apres l'enregistrement
+  des associations — quand une fiche porte les roles TITULAIRE + PERE et/ou
+  TITULAIRE + MERE (typiquement un acte de naissance), les liens de filiation
+  reciproques (PERE/MERE <-> ENFANT) sont crees automatiquement
+  (`mode_creation = DEDUIT`), sans double creation si deja existants.
+- `GET /api/recherche` accepte desormais `roleAffiliation` (ex. ne retrouver
+  le nom saisi que lorsqu'il apparait comme PERE d'un acte, pas dans n'importe
+  quel role) — parametre prevu des l'origine, ajoute a `RechercheController`,
+  `RechercheRequest` et filtre dans `RechercheService`.
+- Frontend : filtre "Affiliation (role sur l'acte)" dans les filtres avances
+  de Recherche ; nouvelle section "Affiliations (filiation)" sur la page
+  Personnes (recherche d'une personne, affichage de ses liens de parente,
+  ajout manuel d'un lien avec recherche de la personne apparentee).
+
 ## Correctifs suite a un test reel en conditions de production (retour utilisateur)
 
 Ce lot fait suite a un test reel de l'application (backend + frontend + base

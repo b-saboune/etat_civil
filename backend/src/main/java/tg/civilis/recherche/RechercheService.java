@@ -50,6 +50,15 @@ public class RechercheService {
             List<AssociationPersonneActe> associations = associationRepository.findByPersonneId(personne.getId());
 
             for (AssociationPersonneActe association : associations) {
+                // Recherche par affiliation (section 11.9 du prompt maitre) : si un
+                // role est precise, on ne retient cette personne que lorsqu'elle
+                // apparait dans CE role precis sur la fiche (ex. chercher "AMEGAN"
+                // uniquement en tant que PERE, pas en tant que TITULAIRE ou TEMOIN).
+                if (requete.roleAffiliation() != null && !requete.roleAffiliation().isBlank()
+                    && !requete.roleAffiliation().equalsIgnoreCase(association.getRole())) {
+                    continue;
+                }
+
                 FicheIndexation fiche = association.getFicheIndexation();
                 if (resultats.containsKey(fiche.getId())) continue;
 

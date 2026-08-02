@@ -30,9 +30,14 @@ public class RechercheController {
         @RequestParam(required = false) String prenoms,
         @RequestParam(required = false) String typeActe,
         @RequestParam(required = false) String dateDebut,
-        @RequestParam(required = false) String dateFin
+        @RequestParam(required = false) String dateFin,
+        // Section 11.9 du prompt maitre : recherche par affiliation (ex. ne
+        // retrouver le nom saisi que lorsqu'il apparait comme PERE/MERE d'un
+        // acte, pas dans n'importe quel role) — parametre prevu des l'origine
+        // mais jusque-la absent de l'implementation.
+        @RequestParam(required = false) String roleAffiliation
     ) {
-        var resultats = rechercheService.rechercher(new RechercheRequest(nom, prenoms, typeActe, dateDebut, dateFin));
+        var resultats = rechercheService.rechercher(new RechercheRequest(nom, prenoms, typeActe, dateDebut, dateFin, roleAffiliation));
         return ResponseEntity.ok(resultats);
     }
 }

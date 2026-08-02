@@ -9,6 +9,10 @@ export default function RecherchePage() {
   const [typeActe, setTypeActe] = useState('')
   const [dateDebut, setDateDebut] = useState('')
   const [dateFin, setDateFin] = useState('')
+  // Recherche par affiliation (section 11.9 du prompt maitre) : ne retenir
+  // le nom/prenoms saisis que lorsqu'ils correspondent a ce role precis sur
+  // l'acte (ex. chercher AMEGAN uniquement en tant que PERE).
+  const [roleAffiliation, setRoleAffiliation] = useState('')
   const [afficherFiltres, setAfficherFiltres] = useState(false)
   const [typesActe, setTypesActe] = useState<TypeActeDTO[]>([])
   const [resultats, setResultats] = useState<ResultatRechercheDTO[] | null>(null)
@@ -27,7 +31,13 @@ export default function RecherchePage() {
     setARecherche(true)
     try {
       const { data } = await apiClient.get<ResultatRechercheDTO[]>('/recherche', {
-        params: { nom, prenoms, typeActe: typeActe || undefined, dateDebut: dateDebut || undefined, dateFin: dateFin || undefined },
+        params: {
+          nom, prenoms,
+          typeActe: typeActe || undefined,
+          dateDebut: dateDebut || undefined,
+          dateFin: dateFin || undefined,
+          roleAffiliation: roleAffiliation || undefined,
+        },
       })
       setResultats(data)
     } catch (e: any) {
@@ -79,6 +89,15 @@ export default function RecherchePage() {
               </label>
               <label>Date de fin
                 <input type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} />
+              </label>
+              <label>Affiliation (role sur l'acte)
+                <select value={roleAffiliation} onChange={(e) => setRoleAffiliation(e.target.value)}>
+                  <option value="">Tous les roles</option>
+                  <option value="TITULAIRE">Titulaire (personne concernee par l'acte)</option>
+                  <option value="PERE">Pere</option>
+                  <option value="MERE">Mere</option>
+                  <option value="TEMOIN">Temoin</option>
+                </select>
               </label>
             </div>
           )}
