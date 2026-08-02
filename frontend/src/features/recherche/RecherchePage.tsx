@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { apiClient } from '@/api/client'
 import type { ResultatRechercheDTO, TypeActeDTO } from '@/types'
-import { Search, SlidersHorizontal } from 'lucide-react'
+import { Search, SlidersHorizontal, Lightbulb, Copy, CheckCircle2, CircleDot } from 'lucide-react'
 
 export default function RecherchePage() {
   const [nom, setNom] = useState('')
@@ -19,6 +19,7 @@ export default function RecherchePage() {
   const [chargement, setChargement] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
   const [aRecherche, setARecherche] = useState(false)
+  const [copieId, setCopieId] = useState<number | null>(null)
 
   useEffect(() => {
     apiClient.get<TypeActeDTO[]>('/referentiels/types-acte').then(({ data }) => setTypesActe(data)).catch(() => {})
@@ -48,6 +49,17 @@ export default function RecherchePage() {
     }
   }
 
+  const copierLocalisation = (r: ResultatRechercheDTO) => {
+    const texte = `${r.localisation.commune} > ${r.localisation.centre} > ${r.localisation.salleArchive} > ${r.localisation.rayonnage} > Registre ${r.localisation.numeroRegistre} (${r.localisation.annee}) > Page ${r.localisation.page}`
+    navigator.clipboard?.writeText(texte).then(() => {
+      setCopieId(r.ficheIndexationId)
+      setTimeout(() => setCopieId((v) => (v === r.ficheIndexationId ? null : v)), 1800)
+    })
+  }
+
+  const nombreExacts = resultats?.filter((r) => !r.correspondanceApprochee).length ?? 0
+  const nombreApproches = resultats?.filter((r) => r.correspondanceApprochee).length ?? 0
+
   return (
     <div className="civilis-page civilis-entree-douce">
       <div className="civilis-page-entete">
@@ -55,15 +67,21 @@ export default function RecherchePage() {
         <p>La localisation physique complete (commune, centre, salle, rayonnage, registre, page) est toujours affichee avec chaque resultat.</p>
       </div>
 
-      <div className="civilis-carte">
+      <div className="civilis-carte civilis-recherche-hero">
         <form onSubmit={onSubmit} className="civilis-formulaire">
-          <div className="civilis-formulaire-grille">
-            <label>Nom
-              <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="AMEGAN" />
-            </label>
-            <label>Prenoms
-              <input value={prenoms} onChange={(e) => setPrenoms(e.target.value)} placeholder="Kossi Edem" />
-            </label>
+          <div className="civilis-recherche-hero-champs">
+            <div className="civilis-recherche-hero-champ">
+              <Search size={17} />
+              <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Nom (ex. AMEGAN)" />
+            </div>
+            <div className="civilis-recherche-hero-champ">
+              <Search size={17} />
+              <input value={prenoms} onChange={(e) => setPrenoms(e.target.value)} placeholder="Prenoms (ex. Kossi Edem)" />
+            </div>
+            <button type="submit" className="civilis-btn primaire civilis-recherche-hero-bouton" disabled={chargement}>
+              {chargement && <span className="civilis-spinner" />}
+              {chargement ? 'Recherche...' : 'Rechercher'}
+            </button>
           </div>
 
           <button
@@ -101,15 +119,24 @@ export default function RecherchePage() {
               </label>
             </div>
           )}
-
-          <button type="submit" className="civilis-btn primaire" style={{ width: 'fit-content' }} disabled={chargement}>
-            {chargement && <span className="civilis-spinner" />}
-            {chargement ? 'Recherche...' : 'Rechercher'}
-          </button>
         </form>
       </div>
 
       {erreur && <div className="civilis-alerte-erreur">{erreur}</div>}
+
+      {!aRecherche && !chargement && (
+        <div className="civilis-carte civilis-conseils-carte">
+          <div className="civilis-conseils-icone"><Lightbulb size={18} /></div>
+          <div>
+            <div className="civilis-conseils-titre">Conseils pour une recherche efficace</div>
+            <ul className="civilis-conseils-liste">
+              <li>Le nom seul suffit souvent : la recherche tolere les variantes orthographiques et les accents (RG-REC-007, RG-PER-003).</li>
+              <li>Sans resultat exact, des correspondances approchees sont proposees automatiquement — jamais presentees comme certaines (RG-REC-006).</li>
+              <li>Utilisez le filtre "Affiliation" pour ne retrouver une personne que dans un role precis (ex. uniquement comme pere sur l'acte).</li>
+            </ul>
+          </div>
+        </div>
+      )}
 
       {chargement && (
         <div className="civilis-carte">
@@ -131,7 +158,13 @@ export default function RecherchePage() {
 
       {!chargement && resultats && resultats.length > 0 && (
         <div className="civilis-carte">
-          <h2 style={{ marginBottom: 16 }}>{resultats.length} resultat(s)</h2>
+          <div className="civilis-resultats-resume">
+            <h2 style={{ margin: 0 }}>{resultats.length} resultat(s)</h2>
+            <div className="civilis-resultats-puces">
+              {nombreExacts > 0 && <span className="civilis-resultats-puce exacte"><CircleDot size={11} />{nombreExacts} exacte(s)</span>}
+              {nombreApproches > 0 && <span className="civilis-resultats-puce approchee"><CircleDot size={11} />{nombreApproches} approchee(s)</span>}
+            </div>
+          </div>
           {resultats.map((r, index) => (
             <div
               key={r.ficheIndexationId}
@@ -170,6 +203,14 @@ export default function RecherchePage() {
                 <span className="maillon">Registre {r.localisation.numeroRegistre} ({r.localisation.annee})</span>
                 <span className="fleche">→</span>
                 <span className="maillon">Page {r.localisation.page}</span>
+                <button
+                  type="button"
+                  className="civilis-btn secondaire civilis-btn-icone civilis-copier-loc"
+                  title="Copier la localisation"
+                  onClick={() => copierLocalisation(r)}
+                >
+                  {copieId === r.ficheIndexationId ? <CheckCircle2 size={13} /> : <Copy size={13} />}
+                </button>
               </div>
             </div>
           ))}

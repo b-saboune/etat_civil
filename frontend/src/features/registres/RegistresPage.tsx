@@ -284,14 +284,17 @@ export default function RegistresPage() {
                                 <Gauge size={15} />Couverture de recensement
                               </h3>
                               {couverture && (
-                                <>
-                                  <div className="civilis-jauge">
-                                    <div className="civilis-jauge-remplissage" style={{ width: `${Math.min(100, couverture.tauxCouverturePourcent)}%` }} />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                  <div
+                                    className="civilis-anneau-progress"
+                                    style={{ '--pourcentage': Math.min(100, couverture.tauxCouverturePourcent) } as React.CSSProperties}
+                                  >
+                                    <span className="civilis-anneau-progress-valeur">{Math.round(couverture.tauxCouverturePourcent)}%</span>
                                   </div>
-                                  <p style={{ fontSize: 13, color: 'var(--gris-500)', marginTop: 6 }}>
-                                    {couverture.nbFichesIndexees} fiche(s) indexee(s) sur {couverture.nbPages} page(s) ({couverture.tauxCouverturePourcent}%)
+                                  <p style={{ fontSize: 13, color: 'var(--gris-500)', margin: 0 }}>
+                                    {couverture.nbFichesIndexees} fiche(s) indexee(s)<br />sur {couverture.nbPages} page(s)
                                   </p>
-                                </>
+                                </div>
                               )}
                             </div>
                             <div style={{ flex: 1, minWidth: 280 }}>

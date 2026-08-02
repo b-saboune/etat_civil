@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { apiClient } from '@/api/client'
 import type { RegistreVueDTO, TypeActeDTO, FicheIndexationDTO } from '@/types'
 import { useAuth } from '@/auth/AuthContext'
-import { FileStack, Plus, Trash2, Pencil, X, Save, Layers } from 'lucide-react'
+import { FileStack, Plus, Trash2, Pencil, X, Save, Layers, CheckCircle2, Circle, ClipboardList } from 'lucide-react'
 
 interface LignePersonne { nom: string; prenoms: string; role: string }
 
@@ -110,6 +110,7 @@ export default function IndexationPage() {
         <p style={{ fontSize: 12.5, color: 'var(--gris-500)' }}>Agent connecte : {utilisateur?.identifiant ?? '—'}</p>
       </div>
 
+      <div className="civilis-indexation-layout">
       <div className="civilis-carte">
         <div className="civilis-bascule-serie">
           <label className="civilis-interrupteur">
@@ -176,14 +177,37 @@ export default function IndexationPage() {
         </form>
       </div>
 
+      <div className="civilis-carte civilis-apercu-fiche">
+        <h2><ClipboardList size={16} style={{ verticalAlign: 'text-bottom', marginRight: 6 }} />Apercu de la fiche</h2>
+        <ul className="civilis-checklist">
+          <li className={registreId ? 'fait' : ''}>{registreId ? <CheckCircle2 size={15} /> : <Circle size={15} />}Registre selectionne{registreId ? ` — ${registres.find((r) => String(r.id) === registreId)?.numeroRegistre ?? ''}` : ''}</li>
+          <li className={typeActeId ? 'fait' : ''}>{typeActeId ? <CheckCircle2 size={15} /> : <Circle size={15} />}Type d'acte{typeActeId ? ` — ${typesActe.find((t) => String(t.id) === typeActeId)?.libelle ?? ''}` : ''}</li>
+          <li className={numeroActe.trim() ? 'fait' : ''}>{numeroActe.trim() ? <CheckCircle2 size={15} /> : <Circle size={15} />}Numero d'acte{numeroActe.trim() ? ` — ${numeroActe}` : ''}</li>
+          <li className={page ? 'fait' : ''}>{page ? <CheckCircle2 size={15} /> : <Circle size={15} />}Page{page ? ` — ${page}` : ''}</li>
+          <li className={dateEvenement ? 'fait' : ''}>{dateEvenement ? <CheckCircle2 size={15} /> : <Circle size={15} />}Date de l'evenement{dateEvenement ? ` — ${new Date(dateEvenement).toLocaleDateString('fr-FR')}` : ''}</li>
+          <li className={personnes.some((p) => p.nom.trim()) ? 'fait' : ''}>
+            {personnes.some((p) => p.nom.trim()) ? <CheckCircle2 size={15} /> : <Circle size={15} />}
+            {personnes.filter((p) => p.nom.trim()).length} personne(s) associee(s)
+          </li>
+        </ul>
+        {personnes.some((p) => p.nom.trim()) && (
+          <div className="civilis-personnes" style={{ marginTop: 12 }}>
+            {personnes.filter((p) => p.nom.trim()).map((p, i) => (
+              <span key={i} className="personne">{p.nom} {p.prenoms}<span className="role">{p.role}</span></span>
+            ))}
+          </div>
+        )}
+      </div>
+      </div>
+
       {registreId && (
         <div className="civilis-carte" style={{ marginTop: 18 }}>
           <h2>Fiches deja indexees dans ce registre</h2>
           <table className="civilis-tableau">
             <thead><tr><th>N° acte</th><th>Page</th><th>Type</th><th>Date evenement</th><th>Statut</th><th>Actions</th></tr></thead>
             <tbody>
-              {fiches.map((f) => (
-                <tr key={f.id}>
+              {fiches.map((f, idx) => (
+                <tr key={f.id} className="civilis-entree-echelonnee" style={{ animationDelay: `${idx * 35}ms` }}>
                   {ficheEnEdition?.id === f.id ? (
                     <>
                       <td><input value={edition.numeroActe} onChange={(e) => setEdition((s) => ({ ...s, numeroActe: e.target.value }))} /></td>

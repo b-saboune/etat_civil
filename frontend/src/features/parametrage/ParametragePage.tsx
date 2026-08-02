@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '@/api/client'
 import { useAuth } from '@/auth/AuthContext'
-import { Settings, DatabaseBackup, RotateCcw } from 'lucide-react'
+import { Settings, DatabaseBackup, RotateCcw, ShieldCheck, ShieldAlert, Clock, HardDrive, AlertTriangle } from 'lucide-react'
 
 interface Parametre { id: number; cle: string; valeur: string; categorie?: string }
 interface Sauvegarde { id: number; dateExecution: string; type: string; statut: string; tailleOctets?: number }
@@ -81,6 +81,19 @@ export default function ParametragePage() {
     }
   }
 
+  const sauvegardesTriees = [...sauvegardes].sort((a, b) => (a.dateExecution < b.dateExecution ? 1 : -1))
+  const derniereSauvegarde = sauvegardesTriees[0]
+  const derniereReussie = sauvegardesTriees.find((s) => s.statut === 'REUSSIE')
+  const nombreEchecs = sauvegardes.filter((s) => s.statut !== 'REUSSIE').length
+  const systemeSain = !derniereSauvegarde || derniereSauvegarde.statut === 'REUSSIE'
+
+  const groupesParametres = parametres.reduce<Record<string, Parametre[]>>((acc, p) => {
+    const cle = p.categorie ?? 'General'
+    acc[cle] = acc[cle] ?? []
+    acc[cle].push(p)
+    return acc
+  }, {})
+
   return (
     <div className="civilis-page civilis-entree-douce">
       <div className="civilis-page-entete">
@@ -90,40 +103,79 @@ export default function ParametragePage() {
 
       {message && <div className={`civilis-alerte-${message.type === 'succes' ? 'succes' : 'erreur'}`}>{message.texte}</div>}
 
+      {!chargement && (
+        <div className={`civilis-carte civilis-etat-systeme ${systemeSain ? 'sain' : 'alerte'}`}>
+          <div className="civilis-etat-systeme-icone">
+            {systemeSain ? <ShieldCheck size={22} /> : <ShieldAlert size={22} />}
+          </div>
+          <div className="civilis-etat-systeme-grille">
+            <div>
+              <div className="civilis-etat-systeme-libelle"><Clock size={12} style={{ verticalAlign: 'text-bottom', marginRight: 4 }} />Derniere sauvegarde reussie</div>
+              <div className="civilis-etat-systeme-valeur">
+                {derniereReussie ? new Date(derniereReussie.dateExecution).toLocaleString('fr-FR') : 'Aucune'}
+              </div>
+            </div>
+            <div>
+              <div className="civilis-etat-systeme-libelle"><HardDrive size={12} style={{ verticalAlign: 'text-bottom', marginRight: 4 }} />Taille</div>
+              <div className="civilis-etat-systeme-valeur">{formaterTaille(derniereReussie?.tailleOctets)}</div>
+            </div>
+            <div>
+              <div className="civilis-etat-systeme-libelle">Sauvegardes au total</div>
+              <div className="civilis-etat-systeme-valeur">{sauvegardes.length}</div>
+            </div>
+            <div>
+              <div className="civilis-etat-systeme-libelle">Echecs</div>
+              <div className="civilis-etat-systeme-valeur">
+                {nombreEchecs > 0 ? (
+                  <span style={{ color: 'var(--rouge-600, #b42318)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <AlertTriangle size={13} />{nombreEchecs}
+                  </span>
+                ) : '0'}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {chargement ? (
         <div className="civilis-skeleton" style={{ height: 300 }} />
       ) : (
         <div className="civilis-grille-tableaux">
           <div className="civilis-carte">
             <h2>Parametres</h2>
-            <table className="civilis-tableau">
-              <thead><tr><th>Cle</th><th>Valeur</th>{estSuperAdmin && <th>Actions</th>}</tr></thead>
-              <tbody>
-                {parametres.map((p) => (
-                  <tr key={p.id}>
-                    <td>{p.cle}</td>
-                    <td>
-                      {editionCle === p.id ? (
-                        <input value={valeurEdition} onChange={(e) => setValeurEdition(e.target.value)} />
-                      ) : p.valeur}
-                    </td>
-                    {estSuperAdmin && (
-                      <td className="civilis-actions-cellule">
-                        {editionCle === p.id ? (
-                          <>
-                            <button className="civilis-btn secondaire" onClick={() => enregistrerParametre(p.id)}>Enregistrer</button>
-                            <button className="civilis-btn secondaire" onClick={() => setEditionCle(null)}>Annuler</button>
-                          </>
-                        ) : (
-                          <button className="civilis-btn secondaire" onClick={() => { setEditionCle(p.id); setValeurEdition(p.valeur) }}>Modifier</button>
+            {Object.entries(groupesParametres).map(([categorie, items]) => (
+              <div key={categorie} className="civilis-parametres-groupe">
+                <div className="civilis-parametres-groupe-titre">{categorie}</div>
+                <table className="civilis-tableau">
+                  <thead><tr><th>Cle</th><th>Valeur</th>{estSuperAdmin && <th>Actions</th>}</tr></thead>
+                  <tbody>
+                    {items.map((p) => (
+                      <tr key={p.id}>
+                        <td>{p.cle}</td>
+                        <td>
+                          {editionCle === p.id ? (
+                            <input value={valeurEdition} onChange={(e) => setValeurEdition(e.target.value)} />
+                          ) : p.valeur}
+                        </td>
+                        {estSuperAdmin && (
+                          <td className="civilis-actions-cellule">
+                            {editionCle === p.id ? (
+                              <>
+                                <button className="civilis-btn secondaire" onClick={() => enregistrerParametre(p.id)}>Enregistrer</button>
+                                <button className="civilis-btn secondaire" onClick={() => setEditionCle(null)}>Annuler</button>
+                              </>
+                            ) : (
+                              <button className="civilis-btn secondaire" onClick={() => { setEditionCle(p.id); setValeurEdition(p.valeur) }}>Modifier</button>
+                            )}
+                          </td>
                         )}
-                      </td>
-                    )}
-                  </tr>
-                ))}
-                {parametres.length === 0 && <tr><td colSpan={estSuperAdmin ? 3 : 2} className="civilis-vide">Aucun parametre.</td></tr>}
-              </tbody>
-            </table>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+            {parametres.length === 0 && <div className="civilis-vide">Aucun parametre.</div>}
           </div>
 
           <div className="civilis-carte">
@@ -137,10 +189,7 @@ export default function ParametragePage() {
             <table className="civilis-tableau">
               <thead><tr><th>Date</th><th>Type</th><th>Taille</th><th>Statut</th>{estSuperAdmin && <th>Actions</th>}</tr></thead>
               <tbody>
-                {sauvegardes
-                  .slice()
-                  .sort((a, b) => (a.dateExecution < b.dateExecution ? 1 : -1))
-                  .map((s) => (
+                {sauvegardesTriees.map((s) => (
                     <tr key={s.id}>
                       <td>{new Date(s.dateExecution).toLocaleString('fr-FR')}</td>
                       <td>{s.type}</td>
@@ -150,10 +199,10 @@ export default function ParametragePage() {
                         <td className="civilis-actions-cellule">
                           {s.statut === 'REUSSIE' && (
                             <button
-                              className="civilis-btn secondaire civilis-btn-icone"
+                              className="civilis-btn civilis-btn-danger civilis-btn-icone"
                               disabled={restaurationEnCours === s.id}
                               onClick={() => demanderRestauration(s)}
-                              title="Restaurer cette sauvegarde"
+                              title="Restaurer cette sauvegarde (action irreversible)"
                             >
                               <RotateCcw size={14} />
                             </button>

@@ -1038,3 +1038,116 @@ body { color: var(--gris-900); }
 .civilis-historique-icone { display: flex; flex-shrink: 0; }
 .civilis-historique-texte { flex: 1; min-width: 0; }
 .civilis-historique-date { font-size: 11px; color: var(--gris-400); white-space: nowrap; }
+
+/* =====================================================================
+   Innovation/creativite demandee explicitement pour Tableau de bord,
+   Recherche, Indexation, Personnes, Registres, Parametrage. Bloc additif
+   (aucun overflow touche sur un ancetre de .civilis-sidebar).
+   ===================================================================== */
+
+/* ---------- Tableau de bord : accueil + pouls d'activite ---------- */
+.civilis-tdb-entete { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.civilis-tdb-date { font-size: 12.5px; color: var(--gris-500); text-transform: capitalize; white-space: nowrap; }
+
+.civilis-pouls-carte { padding: 16px 22px; }
+.civilis-pouls-entete {
+  display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700;
+  color: var(--gris-700); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px;
+}
+
+.civilis-kpi-icone-fond {
+  position: absolute; top: -6px; right: -6px; opacity: 0.07; transform: scale(2.6);
+  pointer-events: none; color: var(--gris-900);
+}
+.civilis-kpi-carte.accent-bleu .civilis-kpi-icone-fond { color: var(--bleu-700); }
+.civilis-kpi-carte.accent-ocre .civilis-kpi-icone-fond { color: var(--ocre-600); }
+.civilis-kpi-carte.accent-vert .civilis-kpi-icone-fond { color: var(--vert-600); }
+.civilis-kpi-carte.accent-violet .civilis-kpi-icone-fond { color: #6c4fa1; }
+.civilis-kpi-carte { overflow: hidden; }
+
+/* ---------- Recherche : barre hero + conseils + resume des resultats ---------- */
+.civilis-recherche-hero-champs { display: flex; gap: 12px; flex-wrap: wrap; align-items: stretch; }
+.civilis-recherche-hero-champ {
+  display: flex; align-items: center; gap: 10px; flex: 1; min-width: 220px;
+  padding: 13px 16px; border: 1.5px solid var(--gris-200); border-radius: var(--radius-sm);
+  color: var(--gris-400); background: var(--gris-025);
+  transition: border-color var(--transition-rapide), box-shadow var(--transition-rapide), background var(--transition-rapide);
+}
+.civilis-recherche-hero-champ:focus-within { border-color: var(--bleu-600); box-shadow: var(--ombre-focus); background: white; color: var(--bleu-600); }
+.civilis-recherche-hero-champ input { border: none; outline: none; background: transparent; flex: 1; font-size: 15px; font-family: inherit; color: var(--gris-900); }
+.civilis-recherche-hero-bouton { padding: 13px 26px; font-size: 14.5px; }
+
+.civilis-conseils-carte { display: flex; gap: 14px; background: linear-gradient(160deg, var(--ocre-100), white); border-color: var(--ocre-100); }
+.civilis-conseils-icone {
+  width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  background: white; color: var(--ocre-600); flex-shrink: 0; box-shadow: var(--ombre-xs);
+}
+.civilis-conseils-titre { font-size: 13.5px; font-weight: 700; color: var(--gris-900); margin-bottom: 8px; }
+.civilis-conseils-liste { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--gris-600); line-height: 1.7; }
+
+.civilis-resultats-resume { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+.civilis-resultats-puces { display: flex; gap: 8px; }
+.civilis-resultats-puce {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700;
+  padding: 4px 10px; border-radius: 20px;
+}
+.civilis-resultats-puce.exacte { background: var(--vert-100); color: var(--vert-600); }
+.civilis-resultats-puce.approchee { background: var(--ocre-100); color: var(--ocre-600); }
+.civilis-copier-loc { margin-left: 4px; }
+
+/* ---------- Indexation : apercu en direct + checklist ---------- */
+.civilis-indexation-layout { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; align-items: start; }
+@media (max-width: 1000px) { .civilis-indexation-layout { grid-template-columns: 1fr; } }
+.civilis-apercu-fiche { position: sticky; top: 90px; }
+.civilis-checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.civilis-checklist li {
+  display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--gris-400);
+  transition: color var(--transition-rapide);
+}
+.civilis-checklist li svg { flex-shrink: 0; }
+.civilis-checklist li.fait { color: var(--gris-900); font-weight: 500; }
+.civilis-checklist li.fait svg { color: var(--vert-600); }
+
+/* ---------- Personnes : liens groupes + apercu de fusion ---------- */
+.civilis-liens-groupes { display: flex; flex-direction: column; gap: 14px; }
+.civilis-liens-groupe-titre {
+  display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.4px; color: var(--gris-500); margin-bottom: 6px;
+}
+.civilis-fusion-apercu { display: flex; align-items: center; gap: 12px; }
+
+/* ---------- Registres : anneau de couverture ---------- */
+.civilis-anneau-progress {
+  --taille: 84px;
+  width: var(--taille); height: var(--taille); border-radius: 50%; flex-shrink: 0;
+  background: conic-gradient(var(--vert-600) calc(var(--pourcentage) * 1%), var(--gris-100) 0);
+  display: flex; align-items: center; justify-content: center; position: relative;
+  transition: background 0.6s ease-out;
+}
+.civilis-anneau-progress::before { content: ''; position: absolute; inset: 8px; border-radius: 50%; background: white; box-shadow: var(--ombre-xs); }
+.civilis-anneau-progress-valeur { position: relative; font-weight: 800; font-size: 17px; color: var(--gris-900); letter-spacing: -0.3px; }
+
+/* ---------- Parametrage : etat du systeme + groupes de parametres ---------- */
+.civilis-etat-systeme { display: flex; align-items: center; gap: 20px; }
+.civilis-etat-systeme-icone {
+  width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.civilis-etat-systeme.sain .civilis-etat-systeme-icone { background: var(--vert-100); color: var(--vert-600); }
+.civilis-etat-systeme.alerte .civilis-etat-systeme-icone { background: var(--rouge-100); color: var(--rouge-600); }
+.civilis-etat-systeme-grille { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; flex: 1; }
+@media (max-width: 900px) { .civilis-etat-systeme-grille { grid-template-columns: repeat(2, 1fr); } }
+.civilis-etat-systeme-libelle { font-size: 11px; color: var(--gris-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+.civilis-etat-systeme-valeur { font-size: 15px; font-weight: 700; color: var(--gris-900); margin-top: 3px; }
+
+.civilis-parametres-groupe { margin-bottom: 18px; }
+.civilis-parametres-groupe:last-child { margin-bottom: 0; }
+.civilis-parametres-groupe-titre {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+  color: var(--bleu-700); margin-bottom: 6px; padding-bottom: 4px; border-bottom: 2px solid var(--bleu-100);
+}
+
+/* ---------- Bouton danger (action irreversible : restauration de sauvegarde) ---------- */
+.civilis-btn-danger {
+  background: white; color: var(--rouge-600, #b42318); border: 1.5px solid #f3c1ba; box-shadow: none;
+}
+.civilis-btn-danger:hover:not(:disabled) { background: var(--rouge-100, #fdecea); border-color: var(--rouge-600, #b42318); }

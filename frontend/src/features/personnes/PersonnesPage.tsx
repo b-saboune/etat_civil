@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { apiClient } from '@/api/client'
 import type { LienParenteDTO, PersonneDTO } from '@/types'
-import { Users, UserPlus, Search as SearchIcon, Link2, GitMerge, ArrowRight } from 'lucide-react'
+import { Users, UserPlus, Search as SearchIcon, Link2, GitMerge, ArrowRight, Heart, Baby, ArrowUpCircle } from 'lucide-react'
 
 const TYPES_LIEN = ['PERE', 'MERE', 'ENFANT', 'CONJOINT']
 
@@ -217,12 +217,22 @@ export default function PersonnesPage() {
                 <span className="civilis-vide-detail">Aucun lien de parente enregistre pour cette personne.</span>
               </div>
             ) : (
-              <div className="civilis-personnes" style={{ marginBottom: 18 }}>
-                {liens.map((l) => (
-                  <span key={l.id} className="personne">
-                    {l.nomApparente} {l.prenomsApparente}
-                    <span className="role">{l.typeLien}{l.modeCreation === 'DEDUIT' ? ' · deduit' : ''}</span>
-                  </span>
+              <div className="civilis-liens-groupes">
+                {['PERE', 'MERE', 'CONJOINT', 'ENFANT'].filter((t) => liens.some((l) => l.typeLien === t)).map((type) => (
+                  <div key={type} className="civilis-liens-groupe">
+                    <div className="civilis-liens-groupe-titre">
+                      {type === 'CONJOINT' ? <Heart size={13} /> : type === 'ENFANT' ? <Baby size={13} /> : <ArrowUpCircle size={13} />}
+                      {type === 'PERE' ? 'Pere' : type === 'MERE' ? 'Mere' : type === 'CONJOINT' ? 'Conjoint(e)' : 'Enfant(s)'}
+                    </div>
+                    <div className="civilis-personnes">
+                      {liens.filter((l) => l.typeLien === type).map((l) => (
+                        <span key={l.id} className="personne">
+                          {l.nomApparente} {l.prenomsApparente}
+                          {l.modeCreation === 'DEDUIT' && <span className="role">deduit</span>}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
@@ -286,9 +296,12 @@ export default function PersonnesPage() {
               </div>
             )}
             {source && (
-              <div className="civilis-carte-info" style={{ marginTop: 10, padding: 12, fontSize: 13 }}>
-                <strong>{source.nom} {source.prenoms}</strong><br />
-                {source.sexe ?? '—'} · {source.dateNaissance ?? 'date inconnue'}{source.dateApproximative ? ' (approximative)' : ''}
+              <div className="civilis-carte-info civilis-fusion-apercu" style={{ marginTop: 10, padding: 12, fontSize: 13 }}>
+                <span className="civilis-avatar-md">{source.nom.slice(0, 2).toUpperCase()}</span>
+                <div>
+                  <strong>{source.nom} {source.prenoms}</strong><br />
+                  {source.sexe ?? '—'} · {source.dateNaissance ?? 'date inconnue'}{source.dateApproximative ? ' (approximative)' : ''}
+                </div>
               </div>
             )}
           </div>
@@ -316,9 +329,12 @@ export default function PersonnesPage() {
               </div>
             )}
             {cible && (
-              <div className="civilis-carte-info" style={{ marginTop: 10, padding: 12, fontSize: 13 }}>
-                <strong>{cible.nom} {cible.prenoms}</strong><br />
-                {cible.sexe ?? '—'} · {cible.dateNaissance ?? 'date inconnue'}{cible.dateApproximative ? ' (approximative)' : ''}
+              <div className="civilis-carte-info civilis-fusion-apercu" style={{ marginTop: 10, padding: 12, fontSize: 13 }}>
+                <span className="civilis-avatar-md">{cible.nom.slice(0, 2).toUpperCase()}</span>
+                <div>
+                  <strong>{cible.nom} {cible.prenoms}</strong><br />
+                  {cible.sexe ?? '—'} · {cible.dateNaissance ?? 'date inconnue'}{cible.dateApproximative ? ' (approximative)' : ''}
+                </div>
               </div>
             )}
           </div>

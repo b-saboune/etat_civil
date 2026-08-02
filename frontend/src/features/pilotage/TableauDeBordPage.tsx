@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend, LineChart, Line,
+  PieChart, Pie, Cell, Legend, LineChart, Line, AreaChart, Area,
 } from 'recharts'
 import { apiClient } from '@/api/client'
 import { useAuth } from '@/auth/AuthContext'
@@ -26,11 +26,23 @@ const ACCES_RAPIDES: AccesRapide[] = [
   { to: '/parametrage', label: 'Parametrage', sousLibelle: 'Sauvegardes', icone: <Settings size={19} />, permission: 'PARAMETRAGE_GERER' },
 ]
 
+function salutationDuMoment() {
+  const heure = new Date().getHours()
+  if (heure < 12) return 'Bonjour'
+  if (heure < 18) return 'Bon apres-midi'
+  return 'Bonsoir'
+}
+
 export default function TableauDeBordPage() {
-  const { aPermission } = useAuth()
+  const { aPermission, utilisateur } = useAuth()
   const [donnees, setDonnees] = useState<TableauBordDTO | null>(null)
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState<string | null>(null)
+
+  const dateDuJour = useMemo(
+    () => new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+    []
+  )
 
   useEffect(() => {
     let annule = false
@@ -67,10 +79,34 @@ export default function TableauDeBordPage() {
 
   return (
     <div className="civilis-page civilis-entree-douce">
-      <div className="civilis-page-entete">
-        <h1>Tableau de bord</h1>
-        <p>Vue d'ensemble en temps reel de l'activite d'indexation et de localisation des actes pour les collectivites territoriales.</p>
+      <div className="civilis-page-entete civilis-tdb-entete">
+        <div>
+          <h1>{salutationDuMoment()}{utilisateur ? `, ${utilisateur.identifiant}` : ''}</h1>
+          <p>Vue d'ensemble en temps reel de l'activite d'indexation et de localisation des actes pour les collectivites territoriales.</p>
+        </div>
+        <div className="civilis-tdb-date">{dateDuJour}</div>
       </div>
+
+      {donnees.evolutionMensuelle.length > 0 && (
+        <div className="civilis-carte civilis-pouls-carte">
+          <div className="civilis-pouls-entete">
+            <TrendingUp size={16} />
+            <span>Pouls de l'activite — indexations mensuelles</span>
+          </div>
+          <ResponsiveContainer width="100%" height={70}>
+            <AreaChart data={donnees.evolutionMensuelle} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="poulsDegrade" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--bleu-600)" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="var(--bleu-600)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <Area type="monotone" dataKey="nombreFiches" stroke="var(--bleu-700)" strokeWidth={2} fill="url(#poulsDegrade)" />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       <div className="civilis-kpi-grille">
         <KpiCarte to="/indexation" icone={<FileStack size={20} />} libelle="Fiches indexees" valeur={donnees.totalFichesIndexees} accent="bleu" />
@@ -159,6 +195,7 @@ function KpiCarte({ to, icone, libelle, valeur, accent }: { to: string; icone: R
   return (
     <Link to={to} className="civilis-kpi-lien">
       <div className={`civilis-kpi-carte accent-${accent}`} style={{ position: 'relative' }}>
+        <div className="civilis-kpi-icone-fond">{icone}</div>
         <ArrowUpRight size={16} className="civilis-kpi-fleche" />
         <div className="civilis-kpi-icone">{icone}</div>
         <div className="civilis-kpi-valeur">{valeurAnimee.toLocaleString('fr-FR')}</div>

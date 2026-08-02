@@ -4,6 +4,43 @@ Ce document trace, honnetement, l'ecart entre le Prompt Maitre et le code a un i
 Objectif : que quiconque reprenne ce depot sache exactement ce qui est solide et ce qui reste a faire
 avant une mise en production reelle.
 
+## Innovation et creativite visuelle : Tableau de bord, Recherche, Indexation, Personnes, Registres, Parametrage
+
+Demande explicite : plus d'innovation/creativite et de soin visuel sur ces six ecrans. Chaque
+page recoit un ajout distinct plutot qu'un simple recolorage generique :
+
+- **Tableau de bord** : en-tete transforme en briefing (salutation dynamique selon l'heure +
+  date du jour), un "pouls de l'activite" (mini graphique en aire dégradee au-dessus des KPI,
+  reprenant l'evolution mensuelle deja chargee) et un grand icone en filigrane derriere chaque
+  carte KPI.
+- **Recherche** : barre de recherche transformee en hero (champs larges, icone integree),
+  carte de conseils affichee avant toute recherche (astuces RG-REC-006/007/PER-003), resume
+  chiffre des resultats (exacts vs approches) et un bouton "copier la localisation" (presse-papiers)
+  sur chaque resultat — utilite concrete pour un agent qui doit se deplacer vers le rayonnage.
+  Le doublon de bouton "Rechercher" (un dans le hero, un en bas du formulaire) a ete supprime au
+  passage.
+- **Indexation** : disposition en deux colonnes avec un panneau "Apercu de la fiche" vivant a
+  cote du formulaire — checklist qui se coche en temps reel (registre, type d'acte, numero, page,
+  date, personnes) et recapitulatif des personnes deja saisies, pour visualiser l'etat de la
+  fiche avant validation. Animation echelonnee ajoutee sur les lignes du tableau des fiches deja
+  indexees (elle existait deja ailleurs dans l'appli mais pas ici).
+- **Personnes** : les liens de parente ne sont plus une liste plate de badges mais regroupes par
+  type de lien (Pere/Mere/Conjoint/Enfant) avec icone dediee par groupe. La carte de fusion de
+  doublons affiche desormais un avatar a initiales pour la personne source et la personne cible,
+  coherent avec le style introduit sur Agents & utilisateurs.
+- **Registres** : la jauge lineaire de couverture de recensement est remplacee par un anneau de
+  progression circulaire (conic-gradient CSS, sans dependance supplementaire), plus lisible et
+  plus proche des tableaux de bord modernes.
+- **Parametrage** : nouvelle carte "Etat du systeme" en tete de page (derniere sauvegarde
+  reussie, taille, nombre total, nombre d'echecs, badge sain/alerte). Les parametres sont
+  desormais groupes par categorie (`Parametre.categorie`, colonne deja presente en base et dans
+  le type frontend mais jamais exploitee jusqu'ici — pas une nouvelle donnee, un affichage enfin
+  branche dessus). Le bouton de restauration (action irreversible, reservee Super Admin) recoit
+  un style "danger" explicite plutot qu'un simple bouton secondaire neutre.
+
+Toutes les additions reutilisent les tokens de la refonte SaaS precedente (ombres, rayons,
+transitions) ; aucune ne touche a l'overflow d'un ancetre de `.civilis-sidebar`.
+
 ## Refonte de l'ecran "Agents & utilisateurs" (demande explicite : style + creativite)
 
 L'ancien ecran etait un simple tableau plat (une ligne par compte, colonnes role/centres/statut/
