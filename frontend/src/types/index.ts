@@ -99,6 +99,7 @@ export interface FicheIndexationDTO {
   motifErreur?: string
 }
 export interface AgentDTO { id: number; identifiant: string; typeCompte: string; statut: string }
+export interface HistoriqueConnexionDTO { id: number; dateConnexion: string; adresseIp?: string; statut: string }
 export interface RoleDTO { id: number; libelle: string; description?: string }
 export interface PermissionDTO { id: number; module: string; action: string; code: string }
 export interface JournalEntreeDTO { id: number; utilisateur?: string; module: string; action: string; horodatage: string; details?: string }

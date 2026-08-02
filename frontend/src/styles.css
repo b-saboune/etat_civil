@@ -920,3 +920,121 @@ body { color: var(--gris-900); }
 @media (prefers-contrast: more) {
   .civilis-carte, .civilis-card { border-color: var(--gris-300); }
 }
+
+/* =====================================================================
+   Agents & utilisateurs — panneau maitre-detail (creativite / niveau de
+   detail demandes explicitement). Remplace l'ancien tableau plat : liste
+   filtrable a gauche, detail complet (actions, role, centres, historique
+   de connexion RG-UTI-003, reinitialisation de mot de passe reellement
+   fonctionnelle) a droite. Bloc additif, memes principes que la refonte
+   SaaS plus haut (aucun overflow sur un ancetre de .civilis-sidebar).
+   ===================================================================== */
+
+.civilis-stats-mini-rangee {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;
+}
+@media (max-width: 900px) { .civilis-stats-mini-rangee { grid-template-columns: repeat(2, 1fr); } }
+
+.civilis-stat-mini {
+  display: flex; align-items: center; gap: 12px; background: white;
+  border: 1px solid rgba(16, 24, 40, 0.06); border-radius: var(--radius);
+  box-shadow: var(--ombre-xs); padding: 14px 16px;
+  animation: entree-echelonnee var(--transition-douce) ease-out both;
+  transition: box-shadow var(--transition-rapide), transform var(--transition-rapide);
+}
+.civilis-stat-mini:hover { box-shadow: var(--ombre-sm); transform: translateY(-2px); }
+.civilis-stat-mini-icone {
+  width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  background: var(--gris-075); color: var(--gris-600); flex-shrink: 0;
+}
+.civilis-stat-mini-icone.accent-bleu { background: var(--bleu-100); color: var(--bleu-700); }
+.civilis-stat-mini-icone.accent-vert { background: var(--vert-100); color: var(--vert-600); }
+.civilis-stat-mini-icone.accent-ocre { background: var(--ocre-100); color: var(--ocre-600); }
+.civilis-stat-mini-icone.accent-violet { background: #f1ecfa; color: #6c4fa1; }
+.civilis-stat-mini-valeur { font-size: 20px; font-weight: 800; color: var(--gris-900); line-height: 1.1; letter-spacing: -0.4px; }
+.civilis-stat-mini-libelle { font-size: 11.5px; color: var(--gris-500); font-weight: 500; }
+
+.civilis-agents-layout {
+  display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start;
+}
+@media (max-width: 1000px) { .civilis-agents-layout { grid-template-columns: 1fr; } }
+
+.civilis-colonne-liste { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+.civilis-agents-liste-carte { display: flex; flex-direction: column; gap: 14px; }
+
+.civilis-agents-barre-outils { display: flex; flex-direction: column; gap: 10px; }
+.civilis-agents-recherche {
+  display: flex; align-items: center; gap: 8px; padding: 9px 12px; border: 1.5px solid var(--gris-200);
+  border-radius: var(--radius-sm); color: var(--gris-500); transition: border-color var(--transition-rapide), box-shadow var(--transition-rapide);
+}
+.civilis-agents-recherche:focus-within { border-color: var(--bleu-600); box-shadow: var(--ombre-focus); }
+.civilis-agents-recherche input { border: none; outline: none; flex: 1; font-size: 13.5px; font-family: inherit; color: var(--gris-900); }
+.civilis-agents-filtres { display: flex; gap: 8px; }
+.civilis-agents-filtres .civilis-select-compact { flex: 1; }
+
+.civilis-agents-liste {
+  display: flex; flex-direction: column; gap: 6px; max-height: 520px; overflow-y: auto; padding-right: 2px;
+}
+.civilis-agent-carte-liste {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  background: white; border: 1.5px solid transparent; border-radius: var(--radius-sm);
+  padding: 9px 10px; cursor: pointer; font-family: inherit;
+  transition: background var(--transition-rapide), border-color var(--transition-rapide), transform var(--transition-rapide);
+}
+.civilis-agent-carte-liste:hover { background: var(--gris-025); transform: translateX(2px); }
+.civilis-agent-carte-liste.actif {
+  background: var(--bleu-100); border-color: var(--bleu-400);
+  box-shadow: inset 3px 0 0 var(--bleu-600);
+}
+.civilis-agent-carte-corps { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.civilis-agent-carte-nom { font-size: 13.5px; font-weight: 700; color: var(--gris-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.civilis-agent-carte-sous { font-size: 11.5px; color: var(--gris-500); }
+
+.civilis-avatar-md {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--bleu-700), var(--bleu-600));
+  color: white; font-size: 12.5px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.civilis-avatar-lg {
+  width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--bleu-700), var(--ocre-600));
+  color: white; font-size: 22px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 4px var(--bleu-100);
+}
+
+.civilis-agent-detail { min-height: 420px; }
+.civilis-agent-detail-entete { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.civilis-agent-detail-nom { font-size: 19px; font-weight: 800; color: var(--gris-900); letter-spacing: -0.3px; }
+.civilis-agent-detail-meta { display: flex; gap: 8px; margin-top: 6px; }
+
+.civilis-agent-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+
+.civilis-agent-reset-form {
+  display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;
+  margin-top: 14px; padding: 14px; background: var(--gris-025); border-radius: var(--radius-sm);
+  animation: entree-douce 200ms ease-out;
+}
+.civilis-agent-reset-form label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: var(--gris-500); flex: 1; min-width: 220px; }
+.civilis-agent-reset-form input { padding: 9px 12px; border: 1.5px solid var(--gris-200); border-radius: var(--radius-sm); font-family: inherit; font-size: 13.5px; }
+
+.civilis-agent-section { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--gris-100); }
+.civilis-agent-section h3 { font-size: 13px; font-weight: 700; color: var(--gris-700); margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+.civilis-agent-section select { padding: 8px 12px; border: 1.5px solid var(--gris-200); border-radius: var(--radius-sm); font-family: inherit; font-size: 13.5px; }
+
+.civilis-historique-liste { display: flex; flex-direction: column; gap: 2px; list-style: none; margin: 0; padding: 0; }
+.civilis-historique-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px;
+  font-size: 12.5px; color: var(--gris-700); border-left: 3px solid var(--gris-200);
+  transition: background var(--transition-rapide);
+}
+.civilis-historique-item:hover { background: var(--gris-025); }
+.civilis-historique-item.succes { border-left-color: var(--vert-600); }
+.civilis-historique-item.succes .civilis-historique-icone { color: var(--vert-600); }
+.civilis-historique-item.echec { border-left-color: var(--rouge-600); }
+.civilis-historique-item.echec .civilis-historique-icone { color: var(--rouge-600); }
+.civilis-historique-icone { display: flex; flex-shrink: 0; }
+.civilis-historique-texte { flex: 1; min-width: 0; }
+.civilis-historique-date { font-size: 11px; color: var(--gris-400); white-space: nowrap; }

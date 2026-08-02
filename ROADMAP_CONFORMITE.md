@@ -4,6 +4,26 @@ Ce document trace, honnetement, l'ecart entre le Prompt Maitre et le code a un i
 Objectif : que quiconque reprenne ce depot sache exactement ce qui est solide et ce qui reste a faire
 avant une mise en production reelle.
 
+## Refonte de l'ecran "Agents & utilisateurs" (demande explicite : style + creativite)
+
+L'ancien ecran etait un simple tableau plat (une ligne par compte, colonnes role/centres/statut/
+actions) avec un bouton "Reinitialiser le mot de passe" present mais **volontairement desactive**
+(`disabled`, aucune logique derriere) alors que l'endpoint `POST /api/agents/{id}/reset-password`
+existe et fonctionne depuis un lot precedent — fonctionnalite factice corrigee au passage.
+
+Reconstruit en panneau maitre-detail (pattern SaaS moderne : liste filtrable a gauche, detail
+complet a droite), avec :
+- une rangee de statistiques (total, actifs, verrouilles, desactives) ;
+- une liste recherchable et filtrable (type de compte, statut), avatars a initiales degrades ;
+- un panneau de detail par compte selectionne : actions (deverrouiller, activer/desactiver,
+  reinitialiser le mot de passe — desormais un vrai formulaire qui appelle l'API), role, centres
+  affectes (RG-UTI-001), et **l'historique de connexion (RG-UTI-003)** qui n'avait jusque-la
+  aucune interface bien qu'expose par le backend (`GET /api/agents/{id}/historique-connexion`) —
+  liste chronologique avec distinction visuelle connexion reussie / tentative echouee.
+- CSS dedie (stats miniatures, cartes de liste cliquables avec etat actif, avatars a degrade,
+  historique de type "timeline" avec bordure de couleur par statut), coherent avec les tokens de
+  la refonte SaaS precedente (ombres, rayons, transitions).
+
 ## Audit exhaustif Palier 1 vs Prompt Maitre + refonte visuelle "SaaS haut de gamme" (3e passage)
 
 Demande explicite : verifier que toutes les attentes du Palier 1 (section 6 et section 11 du
