@@ -32,6 +32,21 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+        <!-- Correctif critique : plusieurs controleurs renvoient directement des
+             entites JPA portant des associations @ManyToOne(LAZY) (RegistrePhysique,
+             CentreEtatCivil, SalleArchive, Rayonnage...). Sans ce module, Jackson ne
+             sait pas serialiser un proxy Hibernate non initialise et leve une
+             InvalidDefinitionException -> 500 sur GET /api/registres,
+             /api/referentiels/centres, /salles, /rayonnages. Le module est enregistre
+             (voir JacksonConfig) avec FORCE_LAZY_LOADING actif : puisque
+             spring.jpa.open-in-view=true garde la session ouverte jusqu'a la fin de
+             la reponse, les associations sont chargees a la volee sans exception ni
+             donnee manquante (ex. le nom de la commune d'un centre). -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-hibernate6</artifactId>
+            <version>2.17.2</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>

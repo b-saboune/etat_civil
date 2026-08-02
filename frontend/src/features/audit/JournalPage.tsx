@@ -16,7 +16,7 @@ export default function JournalPage() {
   const [chargement, setChargement] = useState(true)
 
   useEffect(() => {
-    apiClient.get<JournalEntree[]>('/journal').then(({ data }) => setEntrees(data)).finally(() => setChargement(false))
+    apiClient.get<JournalEntree[]>('/journal').then(({ data }) => setEntrees(data)).catch(() => {}).finally(() => setChargement(false))
   }, [])
 
   return (

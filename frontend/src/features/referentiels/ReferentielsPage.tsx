@@ -32,6 +32,9 @@ export default function ReferentielsPage() {
       .then(([c, ce, s, r, t]) => {
         setCommunes(c.data); setCentres(ce.data); setSalles(s.data); setRayonnages(r.data); setTypesActe(t.data)
       })
+      // Le toast d'erreur global (voir api/client.ts) informe deja l'agent en cas
+      // d'echec ; ce .catch() evite seulement une promesse rejetee non geree.
+      .catch(() => {})
       .finally(() => setChargement(false))
   }
 

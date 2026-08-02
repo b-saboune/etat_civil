@@ -22,12 +22,12 @@ export default function RapportsPage() {
   const [rapportOuvert, setRapportOuvert] = useState<{ resume: RapportResumeDTO; snapshot: RapportSnapshot } | null>(null)
 
   const charger = () => {
-    apiClient.get<RapportResumeDTO[]>('/rapports').then(({ data }) => setRapports(data)).finally(() => setChargement(false))
+    apiClient.get<RapportResumeDTO[]>('/rapports').then(({ data }) => setRapports(data)).catch(() => {}).finally(() => setChargement(false))
   }
 
   useEffect(() => {
     charger()
-    apiClient.get<CentreDTO[]>('/referentiels/centres').then(({ data }) => setCentres(data))
+    apiClient.get<CentreDTO[]>('/referentiels/centres').then(({ data }) => setCentres(data)).catch(() => {})
   }, [])
 
   const genererRapport = async (e: FormEvent) => {

@@ -22,18 +22,18 @@ export default function UtilisateursPage() {
       data.filter((a) => a.typeCompte === 'AGENT').forEach((a) => {
         apiClient.get<number[]>(`/agents/${a.id}/roles`).then(({ data: ids }) => {
           setRolesParAgent((prev) => ({ ...prev, [a.id]: ids[0] ?? '' }))
-        })
+        }).catch(() => {})
         apiClient.get<number[]>(`/agents/${a.id}/centres`).then(({ data: ids }) => {
           setCentresParAgent((prev) => ({ ...prev, [a.id]: ids }))
-        })
+        }).catch(() => {})
       })
-    }).finally(() => setChargement(false))
+    }).catch(() => {}).finally(() => setChargement(false))
   }
 
   useEffect(() => {
     charger()
-    apiClient.get<RoleDTO[]>('/roles').then(({ data }) => setRoles(data))
-    apiClient.get<CentreDTO[]>('/referentiels/centres').then(({ data }) => setCentres(data))
+    apiClient.get<RoleDTO[]>('/roles').then(({ data }) => setRoles(data)).catch(() => {})
+    apiClient.get<CentreDTO[]>('/referentiels/centres').then(({ data }) => setCentres(data)).catch(() => {})
   }, [])
 
   const affecterCentre = async (agentId: number, centreId: number) => {

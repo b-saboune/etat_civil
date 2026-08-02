@@ -4,6 +4,71 @@ Ce document trace, honnetement, l'ecart entre le Prompt Maitre et le code a un i
 Objectif : que quiconque reprenne ce depot sache exactement ce qui est solide et ce qui reste a faire
 avant une mise en production reelle.
 
+## Correctifs suite a un test reel en conditions de production (retour utilisateur)
+
+Ce lot fait suite a un test reel de l'application (backend + frontend + base
+Postgres locale de l'utilisateur, pas seulement une revue de code). Le test a
+mis en evidence un bug critique invisible jusque-la.
+
+### Bug critique corrige : 500 sur plusieurs listes (Registres, Referentiels)
+
+Constate en direct via le navigateur : `GET /api/registres`,
+`/api/referentiels/centres`, `/salles`, `/rayonnages` renvoyaient tous une
+erreur 500, silencieusement transformee par le frontend en un ecran "Aucun
+... enregistre" (aucun `.catch()` sur ces appels). Cause racine identifiee :
+ces controleurs renvoient directement des entites JPA portant des
+associations `@ManyToOne(LAZY)` (ex. `RegistrePhysique.centre`,
+`CentreEtatCivil.commune`) sans le module Jackson qui sait serialiser un
+proxy Hibernate non initialise (`jackson-datatype-hibernate6`, absent du
+projet) -> `InvalidDefinitionException` a chaque fois qu'un enregistrement
+avait une relation non explicitement chargee.
+
+Aggravant : `GlobalExceptionHandler.handleGeneric()` ne journalisait rien du
+tout -> ces 500 etaient totalement invisibles, meme en console serveur.
+
+Corrige :
+- Ajout de `jackson-datatype-hibernate6` (pom.xml) + `JacksonConfig` enregistrant
+  le module avec `FORCE_LAZY_LOADING` (coherent avec `open-in-view=true` deja
+  actif : la session reste ouverte, donc charger l'association a la volee est
+  sans risque et evite des champs manquants a l'affichage).
+- `GlobalExceptionHandler.handleGeneric()` journalise desormais la cause
+  complete (`log.error(..., ex)`) — message generique conserve cote client
+  (aucune stacktrace exposee), mais diagnostic possible cote serveur.
+- Correctif transitoire en attendant la migration complete vers des DTO
+  explicites pour chaque reponse (deja amorcee : RegistreDTO, NotificationDTO).
+
+### Absence generalisee de gestion d'erreur cote frontend
+
+9 pages faisaient `apiClient.get(...).then(...).finally(...)` sans jamais de
+`.catch()` (Rapports, Journal, Referentiels, Utilisateurs, Roles&Permissions,
+Registres, Parametrage, Administration, Indexation) : toute erreur reseau ou
+serveur produisait un ecran silencieusement vide plutot qu'un message.
+
+Corrige par un bus de toasts centralise (`lib/toast.ts` + `components/ToastHost.tsx`) :
+l'intercepteur de reponse de `apiClient` (deja utilise pour le rafraichissement
+de token) emet desormais un toast d'erreur des qu'une requete echoue (sauf
+`/auth/login`, `/auth/refresh` et `/notifications`, geres separement pour ne
+pas etre redondants ou intrusifs). Chaque page conserve en plus un `.catch(() => {})`
+local pour eviter les promesses rejetees non gerees. Registres beneficie en
+plus d'un etat d'erreur distinct de l'etat vide (message + icone plutot qu'un
+texte gris ambigu).
+
+### Debordement horizontal (retour utilisateur : "le design est vilain, surtout le debordement")
+
+`.civilis-carte` n'avait aucune gestion d'overflow : un tableau large (ex.
+Agents & utilisateurs : Identifiant/Type/Role/Centres/Statut/Actions) forcait
+la carte puis toute la page a deborder horizontalement au lieu de faire
+defiler uniquement la zone du tableau. Corrige : `overflow-x: auto` sur
+`.civilis-carte`, `word-break` sur les cellules, et un filet de securite
+global (`overflow-x: clip` sur le document) pour qu'aucune scrollbar
+horizontale de page n'apparaisse plus jamais, quel que soit le contenu.
+
+### A faire cote utilisateur
+
+Ces correctifs backend necessitent un redemarrage du serveur Spring Boot
+(`mvn spring-boot:run`) pour prendre effet — la recompilation ne se fait pas
+a chaud sans plugin de reload actif sur ce projet.
+
 ## Prompt Maitre V3 (Strategic Government-Grade Edition) — audit Palier 1
 
 Le Prompt Maitre V3 redefinit CIVILIS avec un perimetre tres large (70 sections). Sa propre

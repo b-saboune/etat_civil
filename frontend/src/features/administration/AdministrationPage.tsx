@@ -13,7 +13,7 @@ export default function AdministrationPage() {
   const [message, setMessage] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
 
   const charger = () => {
-    apiClient.get<AdministrateurDTO[]>('/admins').then(({ data }) => setAdministrateurs(data)).finally(() => setChargement(false))
+    apiClient.get<AdministrateurDTO[]>('/admins').then(({ data }) => setAdministrateurs(data)).catch(() => {}).finally(() => setChargement(false))
   }
 
   useEffect(charger, [])

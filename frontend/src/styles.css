@@ -684,3 +684,67 @@ body {
 .civilis-notif-corps { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .civilis-notif-message { font-size: 12.5px; color: var(--gris-800); line-height: 1.4; }
 .civilis-notif-date { font-size: 10.5px; color: var(--gris-500); }
+
+/* ===================== Correctifs debordement + refonte visuelle (retour utilisateur) ===================== */
+
+/* Bug constate : .civilis-carte n'avait aucune gestion d'overflow. Un tableau
+   large (ex. Agents & utilisateurs : Identifiant/Type/Role/Centres/Statut/Actions)
+   forcait alors la carte, puis toute la page, a deborder horizontalement au lieu
+   de faire defiler uniquement la zone du tableau. Filet de securite supplementaire
+   au niveau du document pour ne plus jamais avoir de scrollbar horizontale globale. */
+html, body, #root, .civilis-app, .civilis-shell { max-width: 100%; overflow-x: clip; }
+.civilis-contenu { overflow-x: hidden; }
+.civilis-carte { overflow-x: auto; }
+.civilis-carte table.civilis-tableau { min-width: 100%; }
+.civilis-tableau td, .civilis-tableau th { word-break: break-word; }
+.civilis-tableau td:last-child, .civilis-tableau th:last-child { white-space: nowrap; }
+
+/* Grilles/formulaires : eviter qu'un champ ou un badge trop long ne pousse la
+   largeur du parent (observe sur les listes de centres multiples par agent). */
+.civilis-recherche-form, .civilis-kpi-grille, .civilis-grille-graphiques { min-width: 0; }
+.civilis-carte, .civilis-kpi-carte, .civilis-resultat { min-width: 0; }
+
+/* ----- Etat vide / etat d'erreur, plus lisibles qu'un simple texte gris ----- */
+.civilis-vide {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; padding: 56px 24px; color: var(--gris-500); text-align: center;
+}
+.civilis-vide svg { opacity: 0.35; margin-bottom: 4px; }
+.civilis-vide .civilis-vide-titre { font-size: 14px; font-weight: 600; color: var(--gris-800); }
+.civilis-vide .civilis-vide-detail { font-size: 12.5px; max-width: 360px; }
+
+/* ----- Bus de toasts (voir lib/toast.ts, components/ToastHost.tsx) -----
+   Corrige l'absence totale de retour visuel en cas d'echec d'un appel API :
+   auparavant, une erreur 500/reseau ne produisait ni message ni log visible
+   pour l'agent, seulement un ecran silencieusement vide. */
+.civilis-toast-pile {
+  position: fixed; top: 20px; right: 20px; z-index: 200;
+  display: flex; flex-direction: column; gap: 10px; max-width: 380px;
+}
+.civilis-toast {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: white; border-radius: 10px; box-shadow: var(--ombre-lg);
+  padding: 13px 14px; font-size: 13px; line-height: 1.45; border-left: 4px solid var(--gris-200);
+  animation: entree-toast 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes entree-toast {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.civilis-toast.niveau-erreur { border-left-color: #c23b2e; }
+.civilis-toast.niveau-erreur .civilis-toast-icone { color: #c23b2e; }
+.civilis-toast.niveau-succes { border-left-color: var(--vert-600); }
+.civilis-toast.niveau-succes .civilis-toast-icone { color: var(--vert-600); }
+.civilis-toast.niveau-information { border-left-color: var(--bleu-600); }
+.civilis-toast.niveau-information .civilis-toast-icone { color: var(--bleu-600); }
+.civilis-toast-icone { flex-shrink: 0; margin-top: 1px; }
+.civilis-toast-texte { flex: 1; color: var(--gris-800); min-width: 0; word-break: break-word; }
+.civilis-toast-fermer {
+  flex-shrink: 0; border: none; background: none; color: var(--gris-500); cursor: pointer;
+  padding: 2px; border-radius: 4px; display: flex; transition: background var(--transition-rapide);
+}
+.civilis-toast-fermer:hover { background: var(--gris-100); }
+
+@media (max-width: 480px) {
+  .civilis-toast-pile { left: 12px; right: 12px; top: 12px; max-width: none; }
+}

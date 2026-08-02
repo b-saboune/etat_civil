@@ -3,6 +3,7 @@ import { AuthProvider } from '@/auth/AuthContext'
 import { ProtectedRoute } from '@/auth/ProtectedRoute'
 import { useAuth } from '@/auth/AuthContext'
 import AppLayout from '@/layouts/AppLayout'
+import ToastHost from '@/components/ToastHost'
 import LoginPage from '@/features/authentification/LoginPage'
 import RecherchePage from '@/features/recherche/RecherchePage'
 import TableauDeBordPage from '@/features/pilotage/TableauDeBordPage'
@@ -36,6 +37,7 @@ function RedirectionAccueil() {
 export default function App() {
   return (
     <AuthProvider>
+      <ToastHost />
       <BrowserRouter>
         <Routes>
           <Route path="/connexion" element={<LoginPage />} />

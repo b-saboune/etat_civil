@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { afficherToast } from '@/lib/toast'
 
 // RG-AUTH-002 : le token n'est jamais persiste (pas de localStorage/sessionStorage),
 // uniquement garde en memoire applicative via le module ci-dessous.
@@ -68,6 +69,26 @@ async function rafraichirAccessToken(): Promise<string | null> {
   return rafraichissementEnCours
 }
 
+// Correctif systemique (voir lib/toast.ts) : de nombreux appels a travers
+// l'application n'avaient aucun `.catch()` local, rendant toute erreur
+// serveur totalement invisible pour l'agent (ecran silencieusement vide au
+// lieu d'un message clair). Centraliser l'affichage ici garantit qu'aucun
+// echec ne passe plus inapercu, sans devoir modifier chaque page une a une.
+function chemin(config: any): string {
+  return typeof config?.url === 'string' ? config.url : ''
+}
+
+function estRouteAuthentification(config: any): boolean {
+  const url = chemin(config)
+  return url.includes('/auth/login') || url.includes('/auth/refresh')
+}
+
+// Les notifications sont interrogees en arriere-plan (cloche) : un echec ne
+// doit pas interrompre l'agent avec un toast a chaque chargement de page.
+function estRouteSilencieuse(config: any): boolean {
+  return chemin(config).includes('/notifications')
+}
+
 apiClient.interceptors.response.use(
   (reponse) => reponse,
   async (erreur) => {
@@ -82,6 +103,22 @@ apiClient.interceptors.response.use(
       definirTokens(null, null)
       onExpirationSession?.()
     }
+
+    if (!estRouteAuthentification(requeteOriginale) && !estRouteSilencieuse(requeteOriginale)) {
+      const message = erreur?.response?.data?.message
+      const statut = erreur?.response?.status
+      if (statut && statut !== 401) {
+        afficherToast(
+          typeof message === 'string' && message.length > 0
+            ? message
+            : "Une erreur est survenue lors de la communication avec le serveur.",
+          'erreur'
+        )
+      } else if (!erreur?.response) {
+        afficherToast('Impossible de joindre le serveur. Verifiez votre connexion.', 'erreur')
+      }
+    }
+
     return Promise.reject(erreur)
   }
 )

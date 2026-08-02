@@ -31,13 +31,13 @@ export default function IndexationPage() {
   const [edition, setEdition] = useState({ numeroActe: '', page: '', typeActeId: '', dateEvenement: '' })
 
   useEffect(() => {
-    apiClient.get<RegistreDTO[]>('/registres').then(({ data }) => setRegistres(data))
-    apiClient.get<TypeActeDTO[]>('/referentiels/types-acte').then(({ data }) => setTypesActe(data))
+    apiClient.get<RegistreDTO[]>('/registres').then(({ data }) => setRegistres(data)).catch(() => {})
+    apiClient.get<TypeActeDTO[]>('/referentiels/types-acte').then(({ data }) => setTypesActe(data)).catch(() => {})
   }, [])
 
   const chargerFiches = (idRegistre: string) => {
     if (!idRegistre) { setFiches([]); return }
-    apiClient.get<FicheIndexationDTO[]>('/indexation/fiches', { params: { registreId: idRegistre } }).then(({ data }) => setFiches(data))
+    apiClient.get<FicheIndexationDTO[]>('/indexation/fiches', { params: { registreId: idRegistre } }).then(({ data }) => setFiches(data)).catch(() => {})
   }
 
   useEffect(() => { chargerFiches(registreId) }, [registreId])

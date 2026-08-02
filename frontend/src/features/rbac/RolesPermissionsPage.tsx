@@ -24,6 +24,7 @@ export default function RolesPermissionsPage() {
         )
         setSelections(Object.fromEntries(entrees))
       })
+      .catch(() => {})
       .finally(() => setChargement(false))
   }
 

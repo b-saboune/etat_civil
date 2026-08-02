@@ -31,6 +31,7 @@ export default function ParametragePage() {
   const charger = () => {
     Promise.all([apiClient.get<Parametre[]>('/parametres'), apiClient.get<Sauvegarde[]>('/sauvegardes')])
       .then(([p, s]) => { setParametres(p.data); setSauvegardes(s.data) })
+      .catch(() => {})
       .finally(() => setChargement(false))
   }
 

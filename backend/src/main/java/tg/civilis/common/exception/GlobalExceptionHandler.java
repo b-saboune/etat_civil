@@ -10,6 +10,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -21,6 +23,8 @@ import java.util.List;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ApiError> handleApiException(ApiException ex) {
@@ -58,6 +62,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(Exception ex) {
+        // Correctif : avant ce correctif, aucune exception non geree n'etait
+        // journalisee -> chaque 500 etait totalement invisible en console,
+        // rendant le diagnostic impossible (constate sur GET /api/registres).
+        // Le message reste generique cote client (ne jamais exposer une
+        // stacktrace brute a l'utilisateur), mais la cause complete est
+        // desormais tracee cote serveur.
+        log.error("Erreur interne non geree sur {} {}", ex.getClass().getSimpleName(), ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ApiError.of(500, "ERREUR_INTERNE", "Une erreur inattendue est survenue."));
     }

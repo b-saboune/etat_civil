@@ -25,8 +25,8 @@ export default function NotificationCloche() {
   const navigate = useNavigate()
 
   const charger = () => {
-    apiClient.get<NotificationDTO[]>('/notifications').then(({ data }) => setNotifications(data))
-    apiClient.get<{ nombre: number }>('/notifications/nombre-non-lues').then(({ data }) => setNonLues(data.nombre))
+    apiClient.get<NotificationDTO[]>('/notifications').then(({ data }) => setNotifications(data)).catch(() => {})
+    apiClient.get<{ nombre: number }>('/notifications/nombre-non-lues').then(({ data }) => setNonLues(data.nombre)).catch(() => {})
   }
 
   useEffect(() => {
