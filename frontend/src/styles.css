@@ -375,6 +375,21 @@ body {
 .civilis-badge.neutre { background: var(--gris-100); color: var(--gris-500); }
 .civilis-badge.alerte { background: var(--ocre-100); color: var(--ocre-600); }
 
+/* Jauge de couverture de recensement (Registres > detail) */
+.civilis-jauge {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--gris-100);
+  overflow: hidden;
+}
+.civilis-jauge-remplissage {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--vert-500, #2f9e63), var(--vert-600, #1f7a4d));
+  animation: remplissage-barre 0.6s ease-out;
+}
+
 .civilis-formulaire { display: flex; flex-direction: column; gap: 14px; }
 .civilis-formulaire label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--gris-500); text-transform: uppercase; letter-spacing: 0.3px; }
 .civilis-formulaire input, .civilis-formulaire select {
@@ -760,3 +775,148 @@ body {
 
 /* ----- Affiliations / filiation (Personnes) ----- */
 .civilis-liste-candidats { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* =====================================================================
+   REFONTE "SaaS INSTITUTIONNEL HAUT DE GAMME" — niveau cabinet de conseil
+   international (McKinsey/Deloitte-style) et grandes plateformes SaaS
+   (Stripe/Linear-style : ombres douces multi-couches, surfaces sobres,
+   hierarchie typographique nette). Bloc additif volontairement place a la
+   fin du fichier : la cascade CSS (regle la plus tardive gagne a
+   specificite egale) permet d'affiner l'existant sans rien reecrire ni
+   supprimer plus haut (regle de non-destruction). Aucune propriete
+   "overflow" n'est posee ici sur html/body/#root/.civilis-app/.civilis-shell
+   ni sur un autre ancetre de .civilis-sidebar : la regression sticky deja
+   corrigee plus haut ne doit jamais se reproduire.
+   ===================================================================== */
+
+:root {
+  /* Echelle neutre affinee (au lieu de 4 paliers de gris bruts) */
+  --gris-025: #fafbfc;
+  --gris-075: #f2f4f7;
+  --gris-300: #d0d5dd;
+  --gris-400: #98a2b3;
+  --gris-600: #475467;
+  --gris-700: #344054;
+  --gris-900: #101828;
+
+  --vert-500: #2f9e63;
+  --rouge-600: #b42318;
+  --rouge-100: #fdecea;
+
+  /* Rayons harmonises */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Ombres douces multi-couches (plus de matiere qu'un simple drop-shadow) */
+  --ombre-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --ombre-sm: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --ombre-md: 0 4px 8px -2px rgba(16, 24, 40, 0.07), 0 2px 4px -2px rgba(16, 24, 40, 0.05);
+  --ombre-lg: 0 20px 40px -8px rgba(16, 24, 40, 0.18), 0 8px 16px -8px rgba(16, 24, 40, 0.08);
+  --ombre-focus: 0 0 0 4px rgba(47, 93, 163, 0.14);
+}
+
+/* ---------- Typographie : hierarchie plus nette, tracking editorial ---------- */
+body { color: var(--gris-900); }
+.civilis-page-entete h1 {
+  font-size: 26px; font-weight: 800; letter-spacing: -0.5px; color: var(--gris-900);
+  display: flex; align-items: center; gap: 2px;
+}
+.civilis-page-entete p { color: var(--gris-600); font-size: 13.5px; }
+.civilis-carte h2, .civilis-card h2 { letter-spacing: -0.2px; color: var(--gris-900); }
+.civilis-kpi-valeur { letter-spacing: -0.8px; }
+
+/* ---------- Fond de page : leger relief au lieu d'un gris plat ---------- */
+.civilis-contenu {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(47, 93, 163, 0.045), transparent 45%),
+    radial-gradient(circle at 0% 100%, rgba(201, 138, 46, 0.03), transparent 40%),
+    var(--gris-025);
+}
+
+/* ---------- Cartes : surface plus premium (bordure quasi invisible + ombre) ---------- */
+.civilis-carte, .civilis-card, .civilis-kpi-carte {
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(16, 24, 40, 0.06);
+  box-shadow: var(--ombre-sm);
+}
+.civilis-carte:hover, .civilis-card:hover { box-shadow: var(--ombre-md); }
+.civilis-carte h2, .civilis-card h2 { font-weight: 700; }
+
+/* ---------- Topbar fine : effet verre depoli (glassmorphism sobre) ---------- */
+.civilis-topbar-fine {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: saturate(180%) blur(10px);
+  -webkit-backdrop-filter: saturate(180%) blur(10px);
+}
+
+/* ---------- Sidebar : nav plus aeree, active state en pilule lumineuse ---------- */
+.civilis-nav-item { border-radius: var(--radius-sm); }
+.civilis-nav-item.actif {
+  background: linear-gradient(90deg, rgba(201,138,46,0.22), rgba(201,138,46,0.02));
+  box-shadow: inset 3px 0 0 var(--ocre-600), 0 1px 0 rgba(255,255,255,0.03);
+}
+.civilis-nav-icone {
+  width: 30px; height: 30px; border-radius: 9px; background: rgba(255,255,255,0.05);
+  transition: background var(--transition-rapide), transform var(--transition-rapide);
+}
+.civilis-nav-item:hover .civilis-nav-icone { background: rgba(255,255,255,0.12); transform: scale(1.05); }
+.civilis-nav-item.actif .civilis-nav-icone { background: rgba(201,138,46,0.22); color: var(--ocre-600); }
+
+/* ---------- Boutons : plus "SaaS", coins doux, micro-interaction plus ferme ---------- */
+.civilis-btn {
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.1px;
+  transition: transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow var(--transition-rapide), filter var(--transition-rapide);
+}
+.civilis-btn:active:not(:disabled) { transform: translateY(0) scale(0.97); }
+.civilis-btn:focus-visible { box-shadow: var(--ombre-focus); outline: none; }
+.civilis-btn-icone { border-radius: var(--radius-sm); }
+
+/* ---------- Tableaux : lignes plus respirees, en-tete plus sobre ---------- */
+.civilis-tableau th {
+  border-bottom: 1px solid var(--gris-100);
+  background: var(--gris-025);
+}
+.civilis-tableau thead { position: sticky; top: 0; z-index: 1; }
+.civilis-tableau tbody tr:hover { background: rgba(47, 93, 163, 0.05); }
+.civilis-tableau td { padding: 13px 10px; }
+
+/* ---------- Badges : contraste legerement adouci, forme pilule renforcee ---------- */
+.civilis-badge { letter-spacing: 0.4px; font-weight: 800; }
+
+/* ---------- KPI : icone dans un halo circulaire, plus "dashboard" premium ---------- */
+.civilis-kpi-icone {
+  width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center;
+  background: var(--gris-075); margin-bottom: 12px;
+}
+.civilis-kpi-carte.accent-bleu .civilis-kpi-icone { background: var(--bleu-100); color: var(--bleu-700); }
+.civilis-kpi-carte.accent-ocre .civilis-kpi-icone { background: var(--ocre-100); color: var(--ocre-600); }
+.civilis-kpi-carte.accent-vert .civilis-kpi-icone { background: var(--vert-100); color: var(--vert-600); }
+.civilis-kpi-carte.accent-violet .civilis-kpi-icone { background: #f1ecfa; color: #6c4fa1; }
+
+/* ---------- Formulaires : champs plus doux, focus plus visible ---------- */
+.civilis-formulaire input, .civilis-formulaire select,
+.civilis-field input, .civilis-field select {
+  border-radius: var(--radius-sm);
+  border-color: var(--gris-200);
+}
+.civilis-formulaire input:focus, .civilis-formulaire select:focus,
+.civilis-field input:focus, .civilis-field select:focus {
+  box-shadow: var(--ombre-focus);
+}
+
+/* ---------- Login : carte plus premium, ombre plus profonde ---------- */
+.civilis-login-card { border-radius: var(--radius-xl); box-shadow: var(--ombre-lg); }
+
+/* ---------- Acces rapides (dashboard) : icone plus arrondie, ombre plus douce ---------- */
+.civilis-acces-carte { border-radius: var(--radius); }
+.civilis-acces-icone { border-radius: 12px; }
+
+/* ---------- Reduction de bruit visuel : ombres plus subtiles sur les etats vides ---------- */
+.civilis-vide svg { color: var(--gris-400); }
+
+@media (prefers-contrast: more) {
+  .civilis-carte, .civilis-card { border-color: var(--gris-300); }
+}

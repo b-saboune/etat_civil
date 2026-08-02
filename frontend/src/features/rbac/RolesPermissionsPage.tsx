@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { apiClient } from '@/api/client'
 import type { RoleDTO, PermissionDTO } from '@/types'
-import { ShieldCheck, Plus, Save } from 'lucide-react'
+import { ShieldCheck, Plus, Save, Pencil, Check, X } from 'lucide-react'
 
 export default function RolesPermissionsPage() {
   const [roles, setRoles] = useState<RoleDTO[]>([])
@@ -12,6 +12,8 @@ export default function RolesPermissionsPage() {
   const [descriptionRole, setDescriptionRole] = useState('')
   const [enregistrementEnCours, setEnregistrementEnCours] = useState<number | null>(null)
   const [message, setMessage] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
+  const [roleEnEdition, setRoleEnEdition] = useState<number | null>(null)
+  const [libelleEdition, setLibelleEdition] = useState('')
 
   const charger = () => {
     setChargement(true)
@@ -58,6 +60,20 @@ export default function RolesPermissionsPage() {
     charger()
   }
 
+  const renommerRole = async (role: RoleDTO) => {
+    const libelle = libelleEdition.trim()
+    if (!libelle || libelle === role.libelle) { setRoleEnEdition(null); return }
+    try {
+      await apiClient.patch(`/roles/${role.id}`, { libelle, description: role.description })
+      setRoles((prev) => prev.map((r) => (r.id === role.id ? { ...r, libelle } : r)))
+      setMessage({ type: 'succes', texte: `Role renomme en "${libelle}".` })
+    } catch (err: any) {
+      setMessage({ type: 'erreur', texte: err?.response?.data?.message ?? 'Renommage impossible.' })
+    } finally {
+      setRoleEnEdition(null)
+    }
+  }
+
   const modules = Array.from(new Set(permissions.map((p) => p.module)))
 
   return (
@@ -81,15 +97,42 @@ export default function RolesPermissionsPage() {
                   {roles.map((r) => (
                     <th key={r.id}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, textTransform: 'none', fontSize: 13 }}>
-                        {r.libelle}
-                        <button
-                          className="civilis-btn secondaire civilis-btn-icone"
-                          onClick={() => enregistrer(r.id)}
-                          disabled={enregistrementEnCours === r.id}
-                          title="Enregistrer la matrice pour ce role"
-                        >
-                          <Save size={13} />
-                        </button>
+                        {roleEnEdition === r.id ? (
+                          <>
+                            <input
+                              autoFocus
+                              value={libelleEdition}
+                              onChange={(e) => setLibelleEdition(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') renommerRole(r); if (e.key === 'Escape') setRoleEnEdition(null) }}
+                              style={{ width: 110, fontSize: 13, padding: '4px 6px' }}
+                            />
+                            <button className="civilis-btn secondaire civilis-btn-icone" title="Valider" onClick={() => renommerRole(r)}>
+                              <Check size={13} />
+                            </button>
+                            <button className="civilis-btn secondaire civilis-btn-icone" title="Annuler" onClick={() => setRoleEnEdition(null)}>
+                              <X size={13} />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            {r.libelle}
+                            <button
+                              className="civilis-btn secondaire civilis-btn-icone"
+                              onClick={() => { setRoleEnEdition(r.id); setLibelleEdition(r.libelle) }}
+                              title="Renommer ce role"
+                            >
+                              <Pencil size={13} />
+                            </button>
+                            <button
+                              className="civilis-btn secondaire civilis-btn-icone"
+                              onClick={() => enregistrer(r.id)}
+                              disabled={enregistrementEnCours === r.id}
+                              title="Enregistrer la matrice pour ce role"
+                            >
+                              <Save size={13} />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </th>
                   ))}

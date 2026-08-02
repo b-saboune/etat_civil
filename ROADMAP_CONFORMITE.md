@@ -4,6 +4,83 @@ Ce document trace, honnetement, l'ecart entre le Prompt Maitre et le code a un i
 Objectif : que quiconque reprenne ce depot sache exactement ce qui est solide et ce qui reste a faire
 avant une mise en production reelle.
 
+## Audit exhaustif Palier 1 vs Prompt Maitre + refonte visuelle "SaaS haut de gamme" (3e passage)
+
+Demande explicite : verifier que toutes les attentes du Palier 1 (section 6 et section 11 du
+Prompt Maitre) sont bien respectees et terminees, corriger tout ecart trouve, et elever le visuel
+au niveau d'un SaaS institutionnel haut de gamme (inspiration cabinets de conseil internationaux
+et sites d'Etat).
+
+### Ecarts reels trouves et corriges
+
+- **Faille de securite (meme famille que RG-IDX-013)** : `POST /api/registres/{id}/deplacer`
+  acceptait un `auteurId` fourni par le client dans le corps de la requete, permettant a un agent
+  authentifie d'attribuer a tort un deplacement de registre a un autre utilisateur. Corrige :
+  l'auteur est desormais toujours derive du token JWT authentifie (`SecurityContextHolder`),
+  exactement comme pour l'indexation. `DeplacerRegistreRequest` ne porte plus que
+  `nouveauRayonnageId`.
+- **Ecran "Registres physiques" quasi vide** : le backend exposait deja la creation, le
+  deplacement et le calcul de couverture de recensement (section 11.6), mais l'ecran frontend
+  n'etait qu'un tableau en lecture seule (numero/annee/pages/statut), sans filtre, sans
+  formulaire de creation, sans action de deplacement et sans acces a l'historique ou a la
+  couverture — alors que la section 11.6 prevoit explicitement `ListeRegistres` (filtrable
+  centre/annee/statut) et `DetailRegistre` (jauge de couverture) en plus de `DeplacerRegistre`.
+  Reconstruit entierement : filtres centre/annee/statut, formulaire de creation, action
+  "deplacer" avec confirmation explicite obligatoire (RG-REG-006), changement de statut du cycle
+  de vie (EN_SERVICE/ARCHIVE/RETIRE — nouvel endpoint `PATCH /api/registres/{id}/statut`, aucune
+  suppression physique n'est jamais exposee, dans le meme esprit que RG-REF-001), et un panneau
+  de detail depliable montrant la jauge de couverture de recensement et l'historique complet des
+  deplacements. Les endpoints de lecture (`GET /api/registres`, `GET /api/registres/{id}`)
+  renvoient desormais un DTO de vue (`RegistreVueDTO`) portant la chaine de localisation complete
+  aplati (commune/centre/salle/rayonnage/type d'acte — RG-LOC-001) plutot que le graphe d'entites
+  JPA brut, plus sur et plus simple a consommer.
+- **Ecran "FusionDoublons" totalement absent** : le backend exposait deja
+  `POST /api/personnes/fusionner` (RG-PER-002), mais aucun ecran ne l'appelait — le texte de la
+  page Personnes affirmait a tort que "la fusion de doublons se fait depuis le module de
+  recherche", ce qui etait faux (aucune trace de `fusionner` dans tout le frontend). Construit :
+  vue cote-a-cote (section 11.7) avec recherche independante de la personne source et de la
+  personne cible, apercu des deux fiches, case de confirmation explicite et appel reel a
+  l'endpoint existant.
+- **`PATCH /api/roles/{id}` manquant** : la section 11.4 prevoit "GET/POST/PATCH /api/roles" ;
+  seuls GET et POST existaient, aucune voie pour renommer un role deja cree. Ajoute
+  (`RbacService.modifierRole`, edition en ligne dans l'ecran Roles & permissions).
+
+### Verifie conforme, sans modification necessaire
+
+- RG-AUTH-001/RG-UTI-009/RG-UTI-003 (AuthService) : compte VERROUILLE/INACTIF -> 403 generique
+  sans divulgation, verrouillage automatique + journalisation systematique de chaque tentative.
+- RG-IDX-004/008/012 (IndexationService) : transaction unique, contrainte d'unicite capturee
+  proprement, personne associee obligatoire des la validation Bean Validation.
+- RG-REF-002 (ReferentielsService.desactiverCentre) : blocage effectif si utilisateurs actifs ou
+  registres en service rattaches.
+- L'absence de `PATCH .../desactiver` pour `commune`, `salle_archive` et `rayonnage` n'est **pas**
+  un ecart : `schema_etat_civil.sql` (source de verite, jamais modifiee sans signalement explicite)
+  ne porte tout simplement aucune colonne de statut sur ces trois tables — seuls
+  `centre_etat_civil.statut` et `type_acte.actif` existent. RG-REF-001 ne peut donc s'appliquer
+  qu'aux entites qui en ont techniquement les moyens.
+
+### Refonte visuelle "SaaS institutionnel haut de gamme"
+
+Le design existant (identite togolaise, ruban tricolore, notifications, KPI animes) etait deja
+solide ; plutot que de le remplacer, un bloc CSS additif a ete place en fin de `styles.css`
+(regle de non-destruction : la cascade permet d'affiner sans rien supprimer plus haut) pour
+l'elever au niveau attendu par un cabinet de conseil international ou une grande plateforme
+SaaS : echelle de gris etendue, rayons de bordure harmonises, ombres douces multi-couches
+(inspiration Stripe/Linear), fond de page avec relief radial tres subtil, topbar en verre depoli
+(glassmorphism sobre), navigation laterale avec halo d'icone et pilule active lumineuse, boutons
+avec micro-interaction de pression, tableaux avec en-tete sticky et lignes plus respirees, cartes
+KPI avec icone dans un halo circulaire colore. Aucune propriete `overflow` n'a ete touchee sur un
+ancetre de `.civilis-sidebar` (cause de la regression precedente) : uniquement des raffinements
+de surface, ombre, rayon et typographie.
+
+### Corrige en cours de verification (avant commit)
+
+Une incoherence de nommage entre le DTO backend `CouvertureRecensementDTO` (champs
+`nbFichesIndexees`/`tauxCouverturePourcent`) et le type frontend nouvellement ajoute (qui
+utilisait par erreur `fichesIndexees`/`tauxCouverture`) a ete detectee par relecture manuelle
+avant commit et corrigee des deux cotes (type TypeScript + utilisation dans `RegistresPage.tsx`)
+avant tout commit — aucune version fautive n'a ete poussee.
+
 ## Regression sidebar + fonctionnalite d'affiliation absente (retour utilisateur, 2e passage)
 
 ### Regression introduite par le lot precedent : menu de gauche non fige

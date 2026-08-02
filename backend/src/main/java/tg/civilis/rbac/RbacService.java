@@ -45,6 +45,15 @@ public class RbacService {
         return roleRepository.save(role);
     }
 
+    @Transactional
+    public Role modifierRole(Long roleId, RoleDTO dto) {
+        Role role = roleRepository.findById(roleId)
+            .orElseThrow(() -> ApiException.notFound("ROLE_INTROUVABLE", "Role introuvable."));
+        role.setLibelle(dto.libelle());
+        role.setDescription(dto.description());
+        return roleRepository.save(role);
+    }
+
     /**
      * RG-RBAC-002 : remplacement complet de la matrice pour ce role, dans
      * une seule transaction (on supprime tout puis on recree).

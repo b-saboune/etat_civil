@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { apiClient } from '@/api/client'
-import type { RegistreDTO, TypeActeDTO, FicheIndexationDTO } from '@/types'
+import type { RegistreVueDTO, TypeActeDTO, FicheIndexationDTO } from '@/types'
 import { useAuth } from '@/auth/AuthContext'
 import { FileStack, Plus, Trash2, Pencil, X, Save, Layers } from 'lucide-react'
 
@@ -8,7 +8,7 @@ interface LignePersonne { nom: string; prenoms: string; role: string }
 
 export default function IndexationPage() {
   const { utilisateur } = useAuth()
-  const [registres, setRegistres] = useState<RegistreDTO[]>([])
+  const [registres, setRegistres] = useState<RegistreVueDTO[]>([])
   const [typesActe, setTypesActe] = useState<TypeActeDTO[]>([])
   const [registreId, setRegistreId] = useState('')
   const [numeroActe, setNumeroActe] = useState('')
@@ -31,7 +31,7 @@ export default function IndexationPage() {
   const [edition, setEdition] = useState({ numeroActe: '', page: '', typeActeId: '', dateEvenement: '' })
 
   useEffect(() => {
-    apiClient.get<RegistreDTO[]>('/registres').then(({ data }) => setRegistres(data)).catch(() => {})
+    apiClient.get<RegistreVueDTO[]>('/registres').then(({ data }) => setRegistres(data)).catch(() => {})
     apiClient.get<TypeActeDTO[]>('/referentiels/types-acte').then(({ data }) => setTypesActe(data)).catch(() => {})
   }, [])
 

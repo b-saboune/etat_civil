@@ -29,6 +29,9 @@ public class RbacController {
     @ResponseStatus(HttpStatus.CREATED)
     public Role creerRole(@Valid @RequestBody RoleDTO dto) { return service.creerRole(dto); }
 
+    @PatchMapping("/api/roles/{id}")
+    public Role modifierRole(@PathVariable Long id, @Valid @RequestBody RoleDTO dto) { return service.modifierRole(id, dto); }
+
     @GetMapping("/api/permissions")
     public List<Permission> listerPermissions() { return service.listerPermissions(); }
 

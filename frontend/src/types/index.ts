@@ -61,6 +61,31 @@ export interface SalleDTO { id: number; centreId: number; designation: string }
 export interface RayonnageDTO { id: number; salleId: number; designation: string }
 export interface TypeActeDTO { id: number; libelle: string; actif: boolean }
 export interface RegistreDTO { id: number; centreId: number; rayonnageId: number; typeActeId: number; numeroRegistre: string; annee: number; nbPages: number; statut: string }
+export interface RegistreVueDTO {
+  id: number
+  numeroRegistre: string
+  annee: number
+  nbPages: number
+  statut: string
+  centreId: number
+  centreNom: string
+  communeId: number
+  communeNom: string
+  salleId: number
+  salleDesignation: string
+  rayonnageId: number
+  rayonnageDesignation: string
+  typeActeId: number
+  typeActeLibelle: string
+}
+export interface HistoriqueDeplacementDTO {
+  id: number
+  ancienRayonnage?: string
+  nouveauRayonnage: string
+  dateDeplacement: string
+  auteurIdentifiant?: string
+}
+export interface CouvertureRecensementDTO { nbPages: number; nbFichesIndexees: number; tauxCouverturePourcent: number }
 export interface FicheIndexationDTO {
   id: number
   registre: { id: number }
