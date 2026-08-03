@@ -4,6 +4,25 @@ Ce document trace, honnetement, l'ecart entre le Prompt Maitre et le code a un i
 Objectif : que quiconque reprenne ce depot sache exactement ce qui est solide et ce qui reste a faire
 avant une mise en production reelle.
 
+## Correctif suite a un test reel du demarrage backend (retour utilisateur)
+
+`mvn spring-boot:run` execute reellement par l'utilisateur (Java 17, environnement complet) a
+revele ce que la sandbox de developpement ne pouvait pas detecter (pas d'acces a une instance
+PostgreSQL reelle) : la migration `V5__recherche_insensible_accents.sql` echouait au demarrage
+avec `la fonction unaccent(unknown, text) n'existe pas`. Cause : la fonction wrapper
+`civilis_unaccent_lower` appelait la forme a deux arguments `unaccent('unaccent', texte)` — le
+litteral `'unaccent'` n'est pas automatiquement reconnu comme `regdictionary` dans le contexte
+d'inlining d'une fonction SQL utilisee dans un index fonctionnel. Corrige en utilisant la forme a
+un seul argument `unaccent(texte)` (utilise en interne le dictionnaire par defaut, aucune
+resolution de type necessaire cote appelant) — plus simple et plus robuste, sans rien perdre du
+comportement recherche. Flyway ayant execute la migration dans une transaction, l'echec precedent
+a ete integralement annule (aucune ligne "dirty" dans `flyway_schema_history`) : aucune action de
+reparation manuelle n'est necessaire, un simple redemarrage rejoue V5 proprement.
+
+A noter positivement : `npm run build` execute par l'utilisateur (acces reseau complet, hors de
+cette sandbox) a reussi du premier coup (2233 modules, bundle 773 kB, 57s) — l'incertitude
+documentee plus haut sur le bundle de production est donc levee.
+
 ## Audit final Palier 1 avant ouverture du Palier 2 (demande explicite)
 
 Demande : verifier que toutes les attentes du Palier 1 (section 6 et section 11 du Prompt Maitre)

@@ -22,9 +22,16 @@
 
 CREATE EXTENSION IF NOT EXISTS unaccent;
 
+-- Forme a un seul argument (unaccent(text)) plutot que la forme a deux
+-- arguments (unaccent(regdictionary, text)) : plus robuste, elle ne
+-- necessite aucune resolution de type pour le nom du dictionnaire (source
+-- du premier echec de cette migration : "la fonction unaccent(unknown,
+-- text) n'existe pas", le litteral 'unaccent' n'etant pas automatiquement
+-- reconnu comme regdictionary lors de l'inlining de la fonction SQL).
+-- unaccent(text) utilise en interne le dictionnaire "unaccent" par defaut.
 CREATE OR REPLACE FUNCTION civilis_unaccent_lower(texte TEXT)
 RETURNS TEXT AS $$
-    SELECT lower(unaccent('unaccent', coalesce(texte, '')));
+    SELECT lower(unaccent(coalesce(texte, '')));
 $$ LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 CREATE INDEX IF NOT EXISTS idx_personne_nom_trgm_normalise
