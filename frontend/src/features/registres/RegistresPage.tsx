@@ -157,6 +157,11 @@ export default function RegistresPage() {
     }
   }
 
+  const totalRegistres = registres.length
+  const nbEnService = registres.filter((r) => r.statut === 'EN_SERVICE').length
+  const nbArchives = registres.filter((r) => r.statut === 'ARCHIVE').length
+  const nbRetires = registres.filter((r) => r.statut === 'RETIRE').length
+
   if (chargement) {
     return (
       <div className="civilis-page">
@@ -170,6 +175,25 @@ export default function RegistresPage() {
       <div className="civilis-page-entete">
         <h1><BookMarked size={22} style={{ verticalAlign: 'text-bottom', marginRight: 8 }} />Registres physiques</h1>
         <p>Localisation, cycle de vie et historique de deplacement des registres (RG-REG-006, RG-REG-009, RG-REG-010, RG-LOC-001).</p>
+      </div>
+
+      <div className="civilis-stats-synthese">
+        <div className="civilis-stat-synthese-carte">
+          <BookMarked size={16} />
+          <div><div className="civilis-stat-synthese-valeur">{totalRegistres}</div><div className="civilis-stat-synthese-libelle">Registres au total</div></div>
+        </div>
+        <div className="civilis-stat-synthese-carte">
+          <Gauge size={16} />
+          <div><div className="civilis-stat-synthese-valeur">{nbEnService}</div><div className="civilis-stat-synthese-libelle">En service</div></div>
+        </div>
+        <div className="civilis-stat-synthese-carte">
+          <Archive size={16} />
+          <div><div className="civilis-stat-synthese-valeur">{nbArchives}</div><div className="civilis-stat-synthese-libelle">Archives</div></div>
+        </div>
+        <div className="civilis-stat-synthese-carte">
+          <Ban size={16} />
+          <div><div className="civilis-stat-synthese-valeur">{nbRetires}</div><div className="civilis-stat-synthese-libelle">Retires</div></div>
+        </div>
       </div>
 
       <div className="civilis-carte" style={{ marginBottom: 18 }}>
