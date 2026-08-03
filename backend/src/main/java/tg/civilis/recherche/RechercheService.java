@@ -21,7 +21,8 @@ import java.util.Map;
  * des resultats approximatifs plutot qu'un echec sec ; une correspondance
  * approchee est toujours signalee comme telle, jamais presentee comme une
  * certitude (champ correspondanceApprochee du DTO).
- * RG-REC-007 : recherche insensible aux accents et a la casse (pg_trgm, ILIKE).
+ * RG-REC-007 : recherche insensible aux accents et a la casse (pg_trgm + unaccent
+ * cote base via PersonneRepository.rechercheApprochee, voir V5__recherche_insensible_accents.sql).
  */
 @Service
 public class RechercheService {

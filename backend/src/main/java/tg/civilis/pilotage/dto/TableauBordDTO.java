@@ -4,9 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * RG-TDB-001 : dans une version future multi-centre, ces indicateurs
- * devront etre filtres selon le perimetre de l'utilisateur connecte
- * (centres affectes). Palier 1 : vue globale pour la demonstration.
+ * RG-TDB-001 : ces indicateurs sont deja filtres selon le perimetre de
+ * l'utilisateur connecte (voir TableauBordService.obtenirTableauBord) -
+ * vue globale pour ADMINISTRATEUR/SUPER_ADMIN, restreinte aux centres
+ * affectes pour un AGENT.
  */
 public record TableauBordDTO(
     long totalFichesIndexees,

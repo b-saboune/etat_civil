@@ -4,6 +4,109 @@ Ce document trace, honnetement, l'ecart entre le Prompt Maitre et le code a un i
 Objectif : que quiconque reprenne ce depot sache exactement ce qui est solide et ce qui reste a faire
 avant une mise en production reelle.
 
+## Audit final Palier 1 avant ouverture du Palier 2 (demande explicite)
+
+Demande : verifier que toutes les attentes du Palier 1 (section 6 et section 11 du Prompt Maitre)
+sont bien respectees et terminees avant de passer au Palier 2. Contrairement aux audits precedents
+(qui relisaient surtout le code deja modifie dans le lot en cours), celui-ci relit systematiquement
+CHAQUE regle RG-xxx du catalogue (section 6) contre le code reellement present, avec citation de
+fichier/ligne, plutot que de faire confiance aux conclusions des audits anterieurs.
+
+### Deux ecarts reels, jamais detectes par les 2 audits precedents, corriges dans ce lot
+
+- **RG-TDB-001 (grave)** : le Prompt Maitre exige "indicateurs du tableau de bord strictement
+  filtres selon le perimetre de l'utilisateur connecte". `TableauBordController.obtenir()`
+  n'acceptait aucun contexte utilisateur et `TableauBordService` renvoyait des compteurs 100%
+  globaux (toutes fiches, tous centres, tous registres) a **n'importe quel agent**, quel que soit
+  son centre d'affectation — le code portait meme un commentaire assumant explicitement ce choix
+  ("Palier 1 : vue globale pour la demonstration"), ce qui n'est pourtant écrit nulle part comme
+  exception autorisee dans le Prompt Maitre : la regle est classee "existante", sans reserve.
+  Corrige : `TableauBordController` derive desormais l'utilisateur connecte du JWT (meme pattern
+  que RG-IDX-013/registres) et `TableauBordService.obtenirTableauBord(utilisateurId, typeCompte)`
+  restreint tous les compteurs, la repartition par type d'acte, la charge par centre et
+  l'evolution mensuelle aux centres affectes (`utilisateur_centre`, RG-UTI-001) lorsque l'appelant
+  est un AGENT — et renvoie un tableau de bord a zero (pas la vue globale par defaut) si cet agent
+  n'a aucun centre affecte. ADMINISTRATEUR et SUPER_ADMIN conservent la vue globale : ces types de
+  compte n'ont pas de notion de centre affecte dans le schema, leur perimetre est donc le systeme
+  entier (coherent avec le court-circuit RG-ADM-002 deja applique au RBAC). Nouvelles requetes
+  `*ParCentres` ajoutees dans `TableauBordRepository` (additif, les requetes globales existantes
+  ne sont pas retirees, seulement reservees aux comptes non-AGENT).
+- **RG-PER-003 / RG-REC-007 (moyen)** : la recherche de personnes (`PersonneRepository.rechercheApprochee`,
+  utilisee par la fusion de doublons ET par `GET /api/recherche`) reposait sur `similarity()` et
+  `ILIKE` appliques directement aux colonnes brutes `nom`/`prenoms`, sans aucune neutralisation des
+  accents au niveau SQL — seule `RechercheService.normalise()` compensait partiellement, cote Java,
+  et uniquement pour decider si une correspondance deja trouvee est "exacte" ou "approchee", jamais
+  pour la recherche elle-meme. Consequence concrete : une fiche saisie "Kôdjô" pouvait ne jamais
+  remonter du tout pour une recherche "Kodjo", la similarite trigram entre les deux chaines brutes
+  etant trop faible — violant RG-REC-006 (jamais d'echec sec) autant que RG-REC-007. Corrige par la
+  migration `V5__recherche_insensible_accents.sql` (additive) : extension `unaccent`, fonction
+  wrapper `civilis_unaccent_lower()` (IMMUTABLE, necessaire pour indexer), deux nouveaux index GIN
+  trigram sur la forme normalisee, et la requete native de `rechercheApprochee` compare desormais
+  `civilis_unaccent_lower(colonne)` a `civilis_unaccent_lower(parametre)` des deux cotes. **Limite
+  assumee et documentee dans la migration elle-meme** (pas cachee) : `unaccent()` neutralise les
+  diacritiques latins standards (é/è/ê/à/ô/ù/ç...) mais ne translitere pas les caracteres propres
+  aux orthographes des langues togolaises (ɖ, ɣ, ŋ, ɔ, ɛ...), qui ne sont pas des lettres latines
+  accentuees mais des caracteres distincts — une table de translitteration dediee necessiterait une
+  validation avec des locuteurs/donnees reels, exactement ce que RG-PER-003 demande explicitement
+  ("a tester explicitement avec des cas reels avant mise en production"). Non resolu ce tour-ci par
+  choix assume, pas par oubli.
+
+### Verifie conforme par lecture directe du code (pas par confiance aux audits precedents)
+
+Chaque regle du catalogue section 6 a ete recherchee et confirmee presente dans le code source
+(fichier + ligne cites en session) : RG-JUR-001, RG-AUTH-001/002/003, RG-UTI-001/002/003/005/009,
+RG-ADM-001/002/003, RG-RBAC-001/002, RG-REF-001/002, RG-REG-006/009/010, RG-PER-001/002,
+RG-IDX-002/004/008/011/012, RG-REC-005/006, RG-LOC-001, RG-RAP-001, RG-AUD-001/002, RG-PAR-001/002.
+RG-FO-001 (Palier 3) et RG-NUM-001/002 (Palier 2) sont correctement NON implementes — aucun package
+`frontoffice` ni `numerisation` n'existe cote backend, aucun ecran correspondant cote frontend,
+conformement a l'ordre impose (section 13) et au blocage explicite de Palier 3.
+
+Nuance mineure relevee (non bloquante) : RG-AUD-002 dit que le journal est alimente "via un aspect
+transversal (Spring AOP), jamais par appel manuel disperse dans chaque service" ; `AuditAspect`
+couvre bien les 3 actions critiques par AOP (creerFiche, deplacer registre, fusionner personnes),
+mais `ParametrageService` appelle `journalActiviteService` directement (manuellement) pour la
+sauvegarde planifiee et la restauration — lecture retenue : ces evenements systeme/RG-PAR-001/002
+ne correspondent pas au pattern "action metier critique" vise par l'aspect, l'appel direct y est
+plus lisible qu'un pointcut sur une methode `@Scheduled`. A rediscuter si une revue future juge
+cette tolerance insuffisante.
+
+### Ecarts structurels deja connus, non ouverts par ce tour, toujours reels
+
+Ces points figurent dans les audits precedents et restent effectivement non resolus — confirmes a
+nouveau dans cette session (Java 11 sans Maven disponible dans cet environnement, `tsc --noEmit`
+executes avec succes, `npm run build`/`vite build` se bloquent ou sont tues avant la fin dans cet
+environnement de build restreint, sans que la cause soit imputable au code) :
+
+- **Aucun test automatise** (0 fichier sous `backend/src/test`, 0 fichier `*.test.*`/`*.spec.*`
+  cote frontend) — contrevient directement a la Definition of Done (section 15 : "chaque regle de
+  gestion RG-xxx concernee par le domaine est couverte par au moins un test nomme explicitement")
+  et a la Phase 15 ("Tests globaux + securite"). C'est l'ecart le plus serieux du Palier 1 au sens
+  strict du Prompt Maitre — la verification faite jusqu'ici (relecture manuelle, equilibrage
+  accolades/parentheses, `tsc --noEmit`) est une compensation, pas un remplacement.
+  `mvn compile` n'a jamais pu etre verifie avec succes dans un environnement de build de cette
+  serie de sessions (Java 11 present, pas Java 17 requis par Spring Boot 3.3.4 ; pas de Maven
+  installe ni d'acces reseau vers Maven Central).
+- `npm run build` (bundle Rollup/esbuild complet) ne s'est jamais termine dans le temps/les
+  ressources de cet environnement de sandbox precis, y compris re-teste dans cette session
+  (processus tue avant completion) ; `tsc --noEmit` reste la seule verification de type disponible
+  ici et est passee sans erreur.
+- Export PDF/XLSX des rapports toujours indisponible (Apache POI/iText non telechargeables hors
+  ligne dans cet environnement) — CSV pleinement fonctionnel en attendant.
+- Migration complete vers des DTO explicites (au lieu d'entites JPA directement serialisees via
+  `open-in-view`) toujours a terminer par endroits.
+
+### Conclusion de cet audit
+
+Perimetre fonctionnel du Palier 1 (section 6 + section 11 du Prompt Maitre) : **conforme**, les 2
+ecarts reels trouves ont ete corriges dans ce meme lot (voir ci-dessus), verifies par relecture
+(accolades/parentheses equilibrees, `tsc --noEmit` sans erreur). Le seul point qui empeche une
+declaration de conformite totale et inconditionnelle est l'absence de suite de tests automatises
+et l'impossibilite de cet environnement de sandbox a executer `mvn compile`/`npm run build` de bout
+en bout — ce sont des limites d'infrastructure de la session de developpement, documentees depuis
+plusieurs lots, pas des trous fonctionnels dans le code lui-meme. A rejouer par l'utilisateur avec
+un acces reseau normal avant mise en production reelle (voir section "Recommandation avant mise en
+service reelle" plus bas, deja existante).
+
 ## Innovation et creativite visuelle : Tableau de bord, Recherche, Indexation, Personnes, Registres, Parametrage
 
 Demande explicite : plus d'innovation/creativite et de soin visuel sur ces six ecrans. Chaque
