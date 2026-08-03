@@ -4,6 +4,29 @@ Ce document trace, honnetement, l'ecart entre le Prompt Maitre et le code a un i
 Objectif : que quiconque reprenne ce depot sache exactement ce qui est solide et ce qui reste a faire
 avant une mise en production reelle.
 
+## Deuxieme echec reel de la migration V5 (retour utilisateur) : abandon de l'index fonctionnel
+
+Le premier correctif (forme a un seul argument `unaccent(texte)`) a echoue a son tour au demarrage
+reel (`mvn spring-boot:run`, Java 17, instance PostgreSQL reelle) avec `la fonction unaccent(text)
+n'existe pas` au moment de la creation de l'index fonctionnel — l'exact symetrique de l'echec
+precedent (`unaccent(unknown, text)`). Diagnostic : le probleme n'est pas la forme a un ou deux
+arguments, mais l'optimisation d'inlining que PostgreSQL applique aux fonctions SQL simples
+utilisees dans un index fonctionnel ; cette optimisation echoue a resoudre correctement l'appel a
+`unaccent()`, quelle que soit sa forme, dans ce contexte precis — un comportement que cette
+session ne peut pas reproduire ni deboguer avec certitude sans acces a l'instance PostgreSQL cible
+(aucune base de donnees disponible dans le bac a sable de developpement).
+
+Plutot que de continuer a deviner une troisieme variante de casting sans pouvoir la tester,
+decision assumee : **abandon de l'index fonctionnel**. La migration V5 ne cree desormais que
+l'extension `unaccent` ; `PersonneRepository.rechercheApprochee` appelle `unaccent(lower(...))`
+directement dans la requete (usage standard et documente de cette extension, sans aucun probleme
+de resolution de type puisqu'il n'y a plus d'inlining dans un index a gerer). Cout assume : cette
+comparaison ne beneficie pas d'un index dedie (sequential scan sur l'expression), la recherche
+restant principalement guidee par `similarity()` sur la colonne brute qui, elle, utilise bien
+l'index GIN trigram existant. Proportionne pour les volumes d'un projet academique (section 16) ;
+a revisiter avec un index fonctionnel si le volume de personnes croit significativement, en le
+testant cette fois directement sur l'instance PostgreSQL cible avant de le livrer.
+
 ## Correctif suite a un test reel du demarrage backend (retour utilisateur)
 
 `mvn spring-boot:run` execute reellement par l'utilisateur (Java 17, environnement complet) a

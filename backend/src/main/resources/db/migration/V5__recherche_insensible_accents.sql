@@ -4,11 +4,30 @@
 -- "Kodjo" ne remontait donc pas fiablement une fiche saisie "Kôdjô", le
 -- calcul de similarite pg_trgm n'etant pas lui-meme insensible aux accents.
 --
--- Ajout additif (aucun index ni colonne existante retiree) : extension
--- unaccent + fonction wrapper IMMUTABLE (unaccent() est STABLE par defaut,
--- ce qui interdit son usage direct dans un index fonctionnel) + nouveaux
--- index trigram sur la forme normalisee (minuscules + sans accent), utilises
--- par PersonneRepository.rechercheApprochee.
+-- Ajout additif : extension unaccent uniquement. Deux tentatives
+-- precedentes de cette migration essayaient de batir un index fonctionnel
+-- GIN trigram sur une expression unaccent(lower(...)) via une fonction
+-- wrapper marquee IMMUTABLE (necessaire pour indexer une expression) ; les
+-- deux ont echoue au demarrage reel du backend (impossible a tester dans
+-- l'environnement de developpement, sans instance PostgreSQL) car
+-- PostgreSQL "inline" les fonctions SQL simples utilisees dans un index
+-- fonctionnel, et cette optimisation d'inlining bute sur la resolution de
+-- type interne de unaccent() dans ce contexte precis (forme a un ou deux
+-- arguments, meme resultat) — un probleme documente comme fragile et
+-- dependant de la version de PostgreSQL, pas un simple detail de syntaxe.
+--
+-- Choix retenu, plus simple et robuste : PAS d'index fonctionnel. unaccent()
+-- est appele directement dans la requete (PersonneRepository.rechercheApprochee),
+-- ce qui est l'usage standard et documente de cette extension et ne souffre
+-- d'aucun probleme de resolution de type (contrairement a l'usage dans un
+-- index). Cout accepte : la comparaison sur la forme sans accent ne
+-- beneficie pas d'un index dedie (sequential scan sur la fonction), donc
+-- plus lente qu'un index trigram sur de gros volumes — proportionne pour un
+-- projet academique (section 16, anti sur-ingenierie) et les volumes
+-- attendus pour le Palier 1. A revisiter si le volume de personnes croit
+-- significativement : reintroduire un index fonctionnel en testant
+-- explicitement sur l'instance PostgreSQL cible (version precise) plutot
+-- qu'a l'aveugle.
 --
 -- Limite documentee (RG-PER-003 : "a tester explicitement avec des cas reels
 -- avant mise en production") : unaccent() traite les diacritiques latins
@@ -21,21 +40,3 @@
 -- technique isolee sans validation linguistique.
 
 CREATE EXTENSION IF NOT EXISTS unaccent;
-
--- Forme a un seul argument (unaccent(text)) plutot que la forme a deux
--- arguments (unaccent(regdictionary, text)) : plus robuste, elle ne
--- necessite aucune resolution de type pour le nom du dictionnaire (source
--- du premier echec de cette migration : "la fonction unaccent(unknown,
--- text) n'existe pas", le litteral 'unaccent' n'etant pas automatiquement
--- reconnu comme regdictionary lors de l'inlining de la fonction SQL).
--- unaccent(text) utilise en interne le dictionnaire "unaccent" par defaut.
-CREATE OR REPLACE FUNCTION civilis_unaccent_lower(texte TEXT)
-RETURNS TEXT AS $$
-    SELECT lower(unaccent(coalesce(texte, '')));
-$$ LANGUAGE sql IMMUTABLE PARALLEL SAFE;
-
-CREATE INDEX IF NOT EXISTS idx_personne_nom_trgm_normalise
-    ON personne USING gin (civilis_unaccent_lower(nom) gin_trgm_ops);
-
-CREATE INDEX IF NOT EXISTS idx_personne_prenoms_trgm_normalise
-    ON personne USING gin (civilis_unaccent_lower(prenoms) gin_trgm_ops);
