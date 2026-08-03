@@ -1,27 +1,32 @@
+import { Suspense, lazy } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from '@/auth/AuthContext'
 import { ProtectedRoute } from '@/auth/ProtectedRoute'
 import { useAuth } from '@/auth/AuthContext'
 import AppLayout from '@/layouts/AppLayout'
 import ToastHost from '@/components/ToastHost'
+import PageLoader from '@/components/PageLoader'
 import LoginPage from '@/features/authentification/LoginPage'
-import RecherchePage from '@/features/recherche/RecherchePage'
-import TableauDeBordPage from '@/features/pilotage/TableauDeBordPage'
-import ReferentielsPage from '@/features/referentiels/ReferentielsPage'
-import RegistresPage from '@/features/registres/RegistresPage'
-import UtilisateursPage from '@/features/utilisateurs/UtilisateursPage'
-import RolesPermissionsPage from '@/features/rbac/RolesPermissionsPage'
-import JournalPage from '@/features/audit/JournalPage'
-import ParametragePage from '@/features/parametrage/ParametragePage'
-import PersonnesPage from '@/features/personnes/PersonnesPage'
-import IndexationPage from '@/features/indexation/IndexationPage'
-import AdministrationPage from '@/features/administration/AdministrationPage'
-import RapportsPage from '@/features/rapports/RapportsPage'
+
+const RecherchePage = lazy(() => import('@/features/recherche/RecherchePage'))
+const TableauDeBordPage = lazy(() => import('@/features/pilotage/TableauDeBordPage'))
+const ReferentielsPage = lazy(() => import('@/features/referentiels/ReferentielsPage'))
+const RegistresPage = lazy(() => import('@/features/registres/RegistresPage'))
+const UtilisateursPage = lazy(() => import('@/features/utilisateurs/UtilisateursPage'))
+const RolesPermissionsPage = lazy(() => import('@/features/rbac/RolesPermissionsPage'))
+const JournalPage = lazy(() => import('@/features/audit/JournalPage'))
+const ParametragePage = lazy(() => import('@/features/parametrage/ParametragePage'))
+const PersonnesPage = lazy(() => import('@/features/personnes/PersonnesPage'))
+const IndexationPage = lazy(() => import('@/features/indexation/IndexationPage'))
+const AdministrationPage = lazy(() => import('@/features/administration/AdministrationPage'))
+const RapportsPage = lazy(() => import('@/features/rapports/RapportsPage'))
 
 function Protegee({ children }: { children: React.ReactNode }) {
   return (
     <ProtectedRoute>
-      <AppLayout>{children}</AppLayout>
+      <AppLayout>
+        <Suspense fallback={<PageLoader />}>{children}</Suspense>
+      </AppLayout>
     </ProtectedRoute>
   )
 }

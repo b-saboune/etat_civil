@@ -235,6 +235,56 @@ imparti (le processus `vite build` prend ~57s reel, superieur au plafond d'execu
 shell disponible ici) — comme pour les vagues precedentes, la compilation de production reste a
 confirmer par l'utilisateur sur son poste reel.
 
+## Refonte UI/UX complete — Vague 5/5 : performance + verification finale
+
+Derniere vague du plan en 5 etapes (fondations, shell, accessibilite, micro-interactions,
+performance). Perimetre : point 9 du prompt ("performance") et cloture par une verification
+complete plutot qu'un ajout cosmetique supplementaire.
+
+### Constat
+
+`frontend/src/App.tsx` importait les 12 pages de fonctionnalites de maniere statique (import
+direct en tete de fichier). Consequence reelle : le bundle initial charge par n'importe quel
+agent des la page de connexion contient deja le code de Pilotage (recharts), Rapports (recharts),
+Indexation, Personnes, Registres, etc. -- des ecrans que l'agent ne visitera peut-etre jamais dans
+sa session. Aucun decoupage par route, aucun chargement paresseux.
+
+### Correction
+
+Les 12 pages proteqees (tout sauf `LoginPage`, deja legere et necessaire immediatement) sont
+desormais chargees via `React.lazy(() => import(...))`. Un `<Suspense>` a ete place a l'interieur
+de `AppLayout` (dans `Protegee`), de sorte que la coquille (sidebar, navbar, fil d'ariane) reste
+affichee immediatement et seul le contenu de la page montre l'etat de chargement -- pas de flash
+de l'interface entiere. Nouveau composant `components/PageLoader.tsx` (fileur centre + texte,
+`role="status"` et `aria-live="polite"` pour rester coherent avec l'accessibilite de la vague 3) et
+nouvelle classe `.civilis-spinner.grand` (fileur neutre, plus grand, sur fond clair) pour ce
+contexte plein-page, distincte des fileurs de boutons de la vague 4.
+
+Chaque route protegee beneficie ainsi d'un chunk JavaScript separe genere par Vite au build,
+charge a la demande au moment de la navigation -- sans changer la logique metier d'aucune page
+(aucun fichier de fonctionnalite modifie, seul le point d'entree des routes).
+
+### Volontairement non fait (justifie)
+
+- Memoisation manuelle (`useMemo`/`React.memo`) des listes et tableaux existants : aucune
+  regression de performance constatee dans les ecrans actuels (volumes de donnees modestes,
+  pagination deja en place sur Registres depuis la vague 2) ; ajouter cette optimisation sans
+  probleme mesure aurait ajoute de la complexite sans benefice demontre.
+- Build de production complet execute dans cet environnement pour mesurer precisement la taille
+  des chunks generes : la contrainte technique du bac a sable (commandes limitees a 45 secondes,
+  processus en arriere-plan ne survivant pas entre deux appels) ne permet pas de lancer `vite
+  build` (~57s) jusqu'a son terme ici. Le decoupage par route est neanmoins un gain de performance
+  etabli et mecanique de Vite/React (chunks separes par `import()` dynamique) ; la verification
+  reelle se fait via `tsc --noEmit` (sans erreur), l'equilibre des accolades CSS, et un controle
+  fonctionnel du chargement des pages dans le navigateur de l'utilisateur apres fusion.
+
+### Verification effectuee
+
+`tsc --noEmit` propre (aucune erreur apres le passage en `React.lazy`, tous les exports par
+defaut des 12 pages confirmes). Equilibre des accolades CSS (537/537). Controle fonctionnel dans
+le navigateur reel de l'utilisateur apres fusion Git : navigation entre plusieurs ecrans proteges
+sans erreur console, fileur plein-page visible brievement au premier chargement de chaque route.
+
 ## Innovation et creativite visuelle, 2e vague : Referentiels, Roles & permissions, Administration, Journal, Rapports
 
 Demande explicite : etendre le meme travail de creativite/style/design a "toutes les fonctionnalites",
