@@ -59,6 +59,61 @@ une ligne de tableau depliee plutot qu'une modale (toujours reporte, cf. vague 1
 
 `tsc --noEmit` propre. Equilibre des accolades CSS verifie (527/527).
 
+## Refonte UI/UX complete — Vague 3/5 : accessibilite WCAG 2.2 AA + responsive
+
+### Audit de contraste (calcul reel, formule WCAG de luminance relative)
+
+Plutot que d'estimer "a l'oeil", chaque paire texte/fond reellement utilisee dans styles.css a
+ete calculee (ratio de contraste WCAG standard). Resultat : 4 ecarts reels, tous dans des tokens
+de couleur utilises tres largement, donc corriges une seule fois a la source plutot que
+page par page :
+
+| Paire | Avant | Apres | Seuil requis |
+|---|---|---|---|
+| `--gris-500` (texte secondaire, labels, legendes — des dizaines d'usages) sur blanc | 3.88:1 | 4.91:1 (`#697180`) | 4.5:1 (texte normal) |
+| `--ocre-600` (badges "approchee"/"alerte", alertes, icones KPI) sur `--ocre-100` | 2.60:1 | 4.87:1 (`#8f5f19`) | 4.5:1 |
+| `--vert-600` (badges "succes"/"exacte", icones KPI) sur `--vert-100` | 3.77:1 | 5.68:1 (`#146b38`) | 4.5:1 |
+| `--gris-400` sur blanc (texte reel : checklist, dates d'historique, icone de recherche) | 2.58:1 | reclasse vers le nouveau `--gris-500` (4.91:1) plutot que retouche lui-meme | 4.5:1 / 3:1 |
+
+`--gris-400` reste inchange pour ses usages purement decoratifs (icone d'etat vide, separateur du
+fil d'ariane) ou l'information est deja portee par ailleurs. `--bleu-600`/`--bleu-100` (5.69:1) et
+`--rouge-600`/`--rouge-100` (5.75:1) etaient deja conformes, non modifies. Ces 3 tokens de couleur
+(`--gris-500`, `--ocre-600`, `--vert-600`) sont abondamment reutilises (design system oblige) : les
+corriger a la source répare des dizaines d'occurrences en un seul endroit plutot que
+composant par composant, avec un impact visuel mineur (memes teintes, legerement plus soutenues).
+
+### Nommage accessible (4.1.2 Name, Role, Value)
+
+- 3 champs de recherche reposaient uniquement sur `placeholder` (identifiant dans Agents &
+  utilisateurs, nom/prenoms dans Recherche) sans nom accessible programmatique — `aria-label`
+  ajoute sur chacun.
+- 1 bouton icone sans aucun nom accessible : "retirer cette personne" dans le formulaire
+  d'indexation (bouton corbeille) — `aria-label` + `title` ajoutes. Tous les autres boutons icone
+  de l'application avaient deja un `title`, verifie systematiquement par recherche exhaustive.
+
+### Responsive
+
+- `.civilis-ligne-personne` (formulaire d'indexation, 4 colonnes fixes) n'avait aucune regle
+  responsive et pouvait deborder sous 560px : passe en une colonne sur mobile etroit.
+- Verification : les tableaux sont deja dans des `.civilis-carte` avec `overflow-x: auto`
+  (correctif d'une regression anterieure), donc pas de debordement horizontal de page sur les
+  listes larges (Registres, Recherche) meme sans cette correction specifique.
+
+### Deja conforme (verifie, pas seulement suppose)
+
+Lien d'evasion clavier, piege de focus de la modale, fermeture Echap des menus, jeton de focus
+unique coherent (`--ombre-focus`), `prefers-reduced-motion` respecte globalement : tout deja en
+place depuis les vagues 1 et 2.
+
+### Reporte
+
+Audit clavier exhaustif de chaque ecran restant (vague 4, au fil du polish) ; support
+`prefers-contrast: more` actuellement limite a la bordure des cartes, a etendre si besoin.
+
+### Verification effectuee
+
+`tsc --noEmit` propre. Equilibre des accolades CSS (529/529).
+
 ## Refonte UI/UX complete (demande "equipe d'experts" niveau gouvernemental/bancaire) — Vague 1/5 : fondations du design system
 
 Demande explicite de l'utilisateur : une refonte complete au niveau Design System (pas seulement du

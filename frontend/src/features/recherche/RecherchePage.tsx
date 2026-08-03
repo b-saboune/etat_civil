@@ -72,11 +72,11 @@ export default function RecherchePage() {
           <div className="civilis-recherche-hero-champs">
             <div className="civilis-recherche-hero-champ">
               <Search size={17} />
-              <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Nom (ex. AMEGAN)" />
+              <input aria-label="Nom" value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Nom (ex. AMEGAN)" />
             </div>
             <div className="civilis-recherche-hero-champ">
               <Search size={17} />
-              <input value={prenoms} onChange={(e) => setPrenoms(e.target.value)} placeholder="Prenoms (ex. Kossi Edem)" />
+              <input aria-label="Prenoms" value={prenoms} onChange={(e) => setPrenoms(e.target.value)} placeholder="Prenoms (ex. Kossi Edem)" />
             </div>
             <button type="submit" className="civilis-btn primaire civilis-recherche-hero-bouton" disabled={chargement}>
               {chargement && <span className="civilis-spinner" />}

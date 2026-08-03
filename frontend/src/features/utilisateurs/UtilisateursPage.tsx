@@ -214,7 +214,7 @@ export default function UtilisateursPage() {
             <div className="civilis-agents-barre-outils">
               <div className="civilis-agents-recherche">
                 <Search size={15} />
-                <input placeholder="Rechercher un identifiant..." value={recherche} onChange={(e) => setRecherche(e.target.value)} />
+                <input aria-label="Rechercher un identifiant" placeholder="Rechercher un identifiant..." value={recherche} onChange={(e) => setRecherche(e.target.value)} />
               </div>
               <div className="civilis-agents-filtres">
                 <select className="civilis-select-compact" value={filtreType} onChange={(e) => setFiltreType(e.target.value)}>

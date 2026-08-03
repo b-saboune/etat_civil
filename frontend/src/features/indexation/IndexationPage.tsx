@@ -160,7 +160,13 @@ export default function IndexationPage() {
                 <option value="EPOUSE">Epouse</option>
               </select>
               {personnes.length > 1 && (
-                <button type="button" className="civilis-btn-icone" onClick={() => setPersonnes((prev) => prev.filter((_, idx) => idx !== i))}>
+                <button
+                  type="button"
+                  className="civilis-btn-icone"
+                  onClick={() => setPersonnes((prev) => prev.filter((_, idx) => idx !== i))}
+                  aria-label={`Retirer la personne ${i + 1} de la fiche`}
+                  title="Retirer cette personne"
+                >
                   <Trash2 size={14} />
                 </button>
               )}
