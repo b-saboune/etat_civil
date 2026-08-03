@@ -185,7 +185,6 @@ export default function TableauDeBordPage() {
         </div>
       </div>
 
-      <div className="civilis-pied-institutionnel">CIVILIS · Republique Togolaise · Collectivites territoriales</div>
     </div>
   )
 }

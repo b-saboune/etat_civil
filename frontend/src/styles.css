@@ -1420,3 +1420,74 @@ body { color: var(--gris-900); }
   .civilis-modal-voile { padding: 0; align-items: flex-end; }
   .civilis-modal { max-width: 100%; border-radius: var(--radius-lg) var(--radius-lg) 0 0; max-height: 88vh; }
 }
+
+/* =====================================================================
+   VAGUE 2 — REFONTE DU SHELL APPLICATIF (sidebar, navbar, footer, fil
+   d'ariane, menus). Additif : les regles ci-dessous completent le shell
+   existant (.civilis-shell/.civilis-sidebar/.civilis-topbar-fine deja
+   definis plus haut) sans reprendre leurs proprietes de mise en page
+   (overflow, position...), conformement a la regle de non-destruction et
+   au correctif anti-regression deja documente pour la sidebar sticky.
+   ===================================================================== */
+
+/* ---------- Lien d'evasion clavier ("Aller au contenu principal") : WCAG 2.4.1.
+   Invisible tant qu'il n'a pas le focus clavier, visible et au premier plan
+   des que l'utilisateur clavier l'atteint (premier Tab de la page). ---------- */
+.civilis-lien-evasion {
+  position: absolute; left: -9999px; top: 0; z-index: var(--z-toast);
+  background: var(--bleu-900); color: white; padding: 12px 18px; border-radius: 0 0 var(--radius-sm) 0;
+  font-size: var(--text-sm); font-weight: 700; text-decoration: none;
+}
+.civilis-lien-evasion:focus-visible {
+  left: 0; outline: none; box-shadow: var(--ombre-lg);
+}
+.civilis-contenu:focus-visible { outline: none; }
+
+/* ---------- Fil d'ariane reel (derive de la navigation, plus un simple texte
+   fixe) : disposition en ligne avec separateurs, page courante non cliquable
+   et marquee aria-current="page". ---------- */
+.civilis-fil-ariane { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }
+.civilis-fil-ariane-separateur { color: var(--gris-400); flex-shrink: 0; }
+.civilis-fil-ariane-section { color: var(--gris-500); white-space: nowrap; }
+.civilis-fil-ariane [aria-current="page"] { color: var(--gris-900); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- Pied de page institutionnel du shell : desormais un seul
+   composant global (footer de layouts/AppLayout.tsx), plutot que duplique
+   au cas par cas dans certaines pages (ex. Tableau de bord auparavant). ---------- */
+.civilis-pied-shell {
+  text-align: center; font-size: var(--text-xs); color: var(--gris-400);
+  padding: var(--space-5) var(--space-6) var(--space-4); letter-spacing: 0.3px;
+  border-top: 1px solid var(--gris-100); margin-top: auto;
+}
+
+/* ---------- Menus deroulants (notifications) : etats clavier coherents avec
+   le reste du systeme (meme jeton de focus que partout ailleurs). ---------- */
+.civilis-notif-bouton:focus-visible { box-shadow: var(--ombre-focus); outline: none; }
+.civilis-notif-item:focus-visible { outline: none; background: var(--gris-075); }
+
+/* ---------- Pagination (composants/ui/Pagination.tsx) : reutilisable pour
+   toute liste deja chargee cote client (Registres, futures listes) tant
+   qu'aucun endpoint ne supporte une pagination cote serveur. ---------- */
+.civilis-pagination {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+  margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--gris-100);
+  flex-wrap: wrap; font-size: var(--text-sm); color: var(--gris-500);
+}
+.civilis-pagination-boutons { display: flex; align-items: center; gap: var(--space-2); }
+.civilis-pagination-page {
+  min-width: 32px; height: 32px; padding: 0 8px; border-radius: var(--radius-sm); border: 1px solid var(--gris-200);
+  background: white; color: var(--gris-700); font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+  transition: background var(--duree-rapide), border-color var(--duree-rapide), color var(--duree-rapide);
+  display: flex; align-items: center; justify-content: center;
+}
+.civilis-pagination-page:hover:not(:disabled) { border-color: var(--bleu-400); color: var(--bleu-700); }
+.civilis-pagination-page:disabled { opacity: 0.35; cursor: not-allowed; }
+.civilis-pagination-page.actif { background: var(--bleu-700); border-color: var(--bleu-700); color: white; }
+.civilis-pagination-page:focus-visible { box-shadow: var(--ombre-focus); outline: none; }
+.civilis-pagination-taille { display: flex; align-items: center; gap: var(--space-2); }
+.civilis-pagination-taille select {
+  border: 1px solid var(--gris-200); border-radius: var(--radius-sm); padding: 5px 8px; font-size: var(--text-sm); font-family: inherit;
+}
+@media (max-width: 640px) {
+  .civilis-pagination { justify-content: center; text-align: center; }
+}

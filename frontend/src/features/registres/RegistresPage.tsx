@@ -8,6 +8,7 @@ import {
   BookMarked, FileWarning, Plus, ArrowRightLeft, ChevronDown, ChevronUp,
   Gauge, History, Archive, Ban, RotateCcw,
 } from 'lucide-react'
+import Pagination from '@/components/ui/Pagination'
 
 const LIBELLES_STATUT: Record<string, string> = {
   EN_SERVICE: 'En service',
@@ -162,6 +163,17 @@ export default function RegistresPage() {
   const nbArchives = registres.filter((r) => r.statut === 'ARCHIVE').length
   const nbRetires = registres.filter((r) => r.statut === 'RETIRE').length
 
+  // Pagination (vague 2 de la refonte UI) : purement cote client, aucun
+  // endpoint /registres ne supporte page/size actuellement (voir
+  // ROADMAP_CONFORMITE.md). La page revient a 0 chaque fois que la liste
+  // source change (nouveau filtre, creation, deplacement...) pour ne jamais
+  // se retrouver sur une page qui n'existe plus.
+  const [page, setPage] = useState(0)
+  const [tailleParPage, setTailleParPage] = useState(10)
+  useEffect(() => setPage(0), [registres.length, filtreCentre, filtreAnnee, filtreStatut])
+  const totalPages = Math.max(1, Math.ceil(registres.length / tailleParPage))
+  const registresAffiches = registres.slice(page * tailleParPage, (page + 1) * tailleParPage)
+
   if (chargement) {
     return (
       <div className="civilis-page">
@@ -233,7 +245,7 @@ export default function RegistresPage() {
               </tr>
             </thead>
             <tbody>
-              {registres.map((r) => (
+              {registresAffiches.map((r) => (
                 <Fragment key={r.id}>
                   <tr key={r.id} className="civilis-entree-echelonnee">
                     <td>{r.numeroRegistre}</td>
@@ -344,7 +356,7 @@ export default function RegistresPage() {
                   )}
                 </Fragment>
               ))}
-              {registres.length === 0 && (
+              {registresAffiches.length === 0 && (
                 <tr><td colSpan={7}>
                   <div className="civilis-vide">
                     <BookMarked size={30} />
@@ -355,6 +367,17 @@ export default function RegistresPage() {
               )}
             </tbody>
           </table>
+        )}
+
+        {!enErreur && !chargement && (
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onChangerPage={setPage}
+            totalElements={registres.length}
+            tailleParPage={tailleParPage}
+            onChangerTaille={(t) => { setTailleParPage(t); setPage(0) }}
+          />
         )}
 
         <form onSubmit={creerRegistre} className="civilis-formulaire" style={{ marginTop: 20, borderTop: '1px solid var(--gris-100)', paddingTop: 16 }}>

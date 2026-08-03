@@ -4,6 +4,61 @@ Ce document trace, honnetement, l'ecart entre le Prompt Maitre et le code a un i
 Objectif : que quiconque reprenne ce depot sache exactement ce qui est solide et ce qui reste a faire
 avant une mise en production reelle.
 
+## Refonte UI/UX complete — Vague 2/5 : shell applicatif (sidebar, navbar, footer, fil d'ariane, menus, pagination)
+
+Suite de la vague 1. Perimetre traite ici : les 6 elements de "shell" explicitement cites par
+l'utilisateur (Sidebar, Navbar, Footer, Breadcrumb, Pagination, Menus), audites dans
+`layouts/AppLayout.tsx` et `components/NotificationCloche.tsx`.
+
+### Constats de l'audit
+
+- **Fil d'ariane factice** : `.civilis-fil-ariane` affichait un texte fixe ("Republique
+  togolaise · Ministere...") identique sur toutes les pages, sans aucun rapport avec l'ecran
+  reellement affiche — ce n'etait pas un breadcrumb fonctionnel.
+- **Aucun pied de page dans le shell** : `.civilis-pied-institutionnel` n'existait que sur la
+  page de connexion et sur le Tableau de bord (copie-collee), pas comme element de mise en page
+  global.
+- **Etat replie de la sidebar non persiste** : revenait a "etendue" a chaque rechargement.
+- **Aucun lien d'evasion clavier** ("skip to content") : un utilisateur au clavier devait
+  parcourir toute la sidebar avant d'atteindre le contenu de la page, a chaque navigation.
+- **Menu de notifications** : fermeture au clic exterieur deja presente, mais pas a la touche
+  Echap ; aucun attribut ARIA (`aria-haspopup`, `aria-expanded`, `role="menu"`/`"menuitem"`).
+- **Aucune pagination nulle part** : confirme lors de l'audit de la vague 1 (aucun endpoint ne
+  supporte page/size). Les listes deja chargees entierement cote client (Registres notamment)
+  n'offraient donc aucun decoupage, avec un risque de tableau tres long sur un centre avec
+  beaucoup de registres.
+
+### Corrections apportees
+
+- **Fil d'ariane reel** : reconstruit a partir de la meme source que la navigation
+  (`NAV_ITEMS`) — "Accueil › Section › Page courante", page courante non cliquable et marquee
+  `aria-current="page"`.
+- **Pied de page unique** : nouveau `<footer className="civilis-pied-shell">` dans
+  `AppLayout.tsx`, affiche sur toutes les pages protegees ; suppression du doublon dans
+  `TableauDeBordPage.tsx` (la page de connexion, hors shell, garde le sien).
+- **Sidebar repliee persistee** : `localStorage` (cle `civilis.sidebarReduite`), dégradation
+  silencieuse si le stockage est indisponible (navigation privee).
+- **Lien d'evasion clavier** ajoute en tout premier element du shell, invisible tant qu'il n'a
+  pas le focus, visible et prioritaire dessus tout le reste des qu'un utilisateur clavier y
+  arrive (premiere tabulation de la page).
+- **Menu de notifications** : fermeture a l'Echap ajoutee, `aria-haspopup`/`aria-expanded` sur le
+  bouton, `role="menu"`/`role="menuitem"` sur le menu et ses entrees.
+- **Nouveau composant `components/ui/Pagination.tsx`** : generique, purement cote client
+  (numeros de page, navigation premiere/precedente/suivante/derniere, taille de page ajustable),
+  branche sur le tableau de Registres (la liste la plus susceptible de grandir). La page revient
+  automatiquement a 0 quand la liste source change (nouveau filtre, creation, deplacement) pour
+  ne jamais rester bloque sur une page qui n'existe plus.
+
+### Reporte aux vagues suivantes
+
+Extension de la pagination a Recherche/Journal (vague 4, une fois le polish par ecran engage) ;
+audit clavier/contraste systematique de tout le shell (vague 3) ; le deplacement de registre reste
+une ligne de tableau depliee plutot qu'une modale (toujours reporte, cf. vague 1).
+
+### Verification effectuee
+
+`tsc --noEmit` propre. Equilibre des accolades CSS verifie (527/527).
+
 ## Refonte UI/UX complete (demande "equipe d'experts" niveau gouvernemental/bancaire) — Vague 1/5 : fondations du design system
 
 Demande explicite de l'utilisateur : une refonte complete au niveau Design System (pas seulement du

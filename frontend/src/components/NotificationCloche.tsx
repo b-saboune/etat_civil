@@ -31,12 +31,26 @@ export default function NotificationCloche() {
 
   useEffect(() => {
     charger()
+  }, [])
+
+  // Accessibilite du menu deroulant (vague 2 de la refonte UI) : fermeture au
+  // clic exterieur (deja present) ET a la touche Echap (manquante), comme
+  // pour la modale generique -- coherence attendue pour tout menu deroulant.
+  useEffect(() => {
+    if (!ouvert) return
     const handleClicExterieur = (e: MouseEvent) => {
       if (conteneurRef.current && !conteneurRef.current.contains(e.target as Node)) setOuvert(false)
     }
+    const handleEchap = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOuvert(false)
+    }
     document.addEventListener('mousedown', handleClicExterieur)
-    return () => document.removeEventListener('mousedown', handleClicExterieur)
-  }, [])
+    document.addEventListener('keydown', handleEchap)
+    return () => {
+      document.removeEventListener('mousedown', handleClicExterieur)
+      document.removeEventListener('keydown', handleEchap)
+    }
+  }, [ouvert])
 
   const ouvrirMenu = () => {
     setOuvert((v) => !v)
@@ -55,16 +69,23 @@ export default function NotificationCloche() {
 
   return (
     <div className="civilis-notif-conteneur" ref={conteneurRef}>
-      <button className="civilis-btn secondaire civilis-btn-icone civilis-notif-bouton" onClick={ouvrirMenu} title="Notifications">
+      <button
+        className="civilis-btn secondaire civilis-btn-icone civilis-notif-bouton"
+        onClick={ouvrirMenu}
+        title="Notifications"
+        aria-haspopup="true"
+        aria-expanded={ouvert}
+        aria-label={`Notifications${nonLues > 0 ? ` (${nonLues} non lue${nonLues > 1 ? 's' : ''})` : ''}`}
+      >
         <Bell size={16} />
         {nonLues > 0 && <span className="civilis-notif-pastille">{nonLues > 9 ? '9+' : nonLues}</span>}
       </button>
       {ouvert && (
-        <div className="civilis-notif-menu">
+        <div className="civilis-notif-menu" role="menu">
           <div className="civilis-notif-titre">Notifications</div>
           {notifications.length === 0 && <div className="civilis-vide" style={{ padding: 24 }}>Aucune notification.</div>}
           {notifications.map((n) => (
-            <button key={n.id} className={`civilis-notif-item niveau-${n.niveau.toLowerCase()} ${n.lu ? 'lue' : ''}`} onClick={() => traiter(n)}>
+            <button key={n.id} role="menuitem" className={`civilis-notif-item niveau-${n.niveau.toLowerCase()} ${n.lu ? 'lue' : ''}`} onClick={() => traiter(n)}>
               <span className="civilis-notif-icone">{ICONES[n.niveau]}</span>
               <span className="civilis-notif-corps">
                 <span className="civilis-notif-message">{n.message}</span>
