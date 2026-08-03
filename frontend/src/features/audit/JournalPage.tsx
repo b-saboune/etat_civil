@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '@/api/client'
-import { ScrollText } from 'lucide-react'
+import { ScrollText, User, Clock } from 'lucide-react'
 
 interface JournalEntree {
   id: number
@@ -11,13 +11,29 @@ interface JournalEntree {
   details?: string
 }
 
+const PALETTE_MODULE = ['#2f5da3', '#c98a2e', '#1f8a4c', '#4338ca', '#b42318', '#0f766e']
+
+function couleurModule(module: string) {
+  let hash = 0
+  for (let i = 0; i < module.length; i += 1) hash = module.charCodeAt(i) + ((hash << 5) - hash)
+  return PALETTE_MODULE[Math.abs(hash) % PALETTE_MODULE.length]
+}
+
 export default function JournalPage() {
   const [entrees, setEntrees] = useState<JournalEntree[]>([])
   const [chargement, setChargement] = useState(true)
+  const [filtreModule, setFiltreModule] = useState<string | null>(null)
 
   useEffect(() => {
     apiClient.get<JournalEntree[]>('/journal').then(({ data }) => setEntrees(data)).catch(() => {}).finally(() => setChargement(false))
   }, [])
+
+  const trie = useMemo(
+    () => entrees.slice().sort((a, b) => (a.dateHeure < b.dateHeure ? 1 : -1)),
+    [entrees]
+  )
+  const modules = useMemo(() => Array.from(new Set(entrees.map((e) => e.module))).sort(), [entrees])
+  const filtrees = filtreModule ? trie.filter((e) => e.module === filtreModule) : trie
 
   return (
     <div className="civilis-page civilis-entree-douce">
@@ -30,23 +46,47 @@ export default function JournalPage() {
         <div className="civilis-skeleton" style={{ height: 300 }} />
       ) : (
         <div className="civilis-carte">
-          <table className="civilis-tableau">
-            <thead><tr><th>Horodatage</th><th>Acteur</th><th>Module</th><th>Action</th></tr></thead>
-            <tbody>
-              {entrees
-                .slice()
-                .sort((a, b) => (a.dateHeure < b.dateHeure ? 1 : -1))
-                .map((e) => (
-                  <tr key={e.id} className="civilis-entree-echelonnee">
-                    <td>{new Date(e.dateHeure).toLocaleString('fr-FR')}</td>
-                    <td>{e.utilisateur?.identifiant ?? 'Systeme'}</td>
-                    <td>{e.module}</td>
-                    <td>{e.action}</td>
-                  </tr>
-                ))}
-              {entrees.length === 0 && <tr><td colSpan={4} className="civilis-vide">Aucune activite enregistree.</td></tr>}
-            </tbody>
-          </table>
+          {modules.length > 1 && (
+            <div className="civilis-journal-filtres">
+              <button
+                className={`civilis-filtre-puce ${filtreModule === null ? 'actif' : ''}`}
+                onClick={() => setFiltreModule(null)}
+              >
+                Tous ({entrees.length})
+              </button>
+              {modules.map((m) => (
+                <button
+                  key={m}
+                  className={`civilis-filtre-puce ${filtreModule === m ? 'actif' : ''}`}
+                  onClick={() => setFiltreModule(m)}
+                >
+                  {m} ({entrees.filter((e) => e.module === m).length})
+                </button>
+              ))}
+            </div>
+          )}
+
+          {filtrees.length === 0 ? (
+            <div className="civilis-vide">Aucune activite enregistree.</div>
+          ) : (
+            <div className="civilis-timeline">
+              {filtrees.map((e, index) => {
+                const couleur = couleurModule(e.module)
+                return (
+                  <div key={e.id} className="civilis-timeline-item" style={{ animationDelay: `${Math.min(index, 20) * 25}ms` }}>
+                    <span className="civilis-timeline-point" style={{ background: couleur }} />
+                    <div className="civilis-timeline-carte">
+                      <div className="civilis-timeline-module" style={{ color: couleur }}>{e.module} · {e.action}</div>
+                      <div className="civilis-timeline-meta">
+                        <span><Clock size={11} style={{ verticalAlign: 'text-bottom', marginRight: 3 }} />{new Date(e.dateHeure).toLocaleString('fr-FR')}</span>
+                        <span><User size={11} style={{ verticalAlign: 'text-bottom', marginRight: 3 }} />{e.utilisateur?.identifiant ?? 'Systeme'}</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

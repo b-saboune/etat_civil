@@ -1,8 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { apiClient } from '@/api/client'
-import { Landmark, UserPlus, ShieldAlert } from 'lucide-react'
+import { Landmark, UserPlus, ShieldAlert, Users, UserCheck, UserX } from 'lucide-react'
 
 interface AdministrateurDTO { id: number; identifiant: string; typeCompte: string; statut: string }
+
+function initialesDe(identifiant: string) {
+  return identifiant.slice(0, 2).toUpperCase()
+}
 
 export default function AdministrationPage() {
   const [administrateurs, setAdministrateurs] = useState<AdministrateurDTO[]>([])
@@ -46,12 +50,41 @@ export default function AdministrationPage() {
     charger()
   }
 
+  const actifs = administrateurs.filter((a) => a.statut === 'ACTIF').length
+  const inactifs = administrateurs.length - actifs
+
   return (
     <div className="civilis-page civilis-entree-douce">
       <div className="civilis-page-entete">
         <h1><Landmark size={22} style={{ verticalAlign: 'text-bottom', marginRight: 8 }} />Super Administration</h1>
         <p>Reserve au Super Administrateur : gestion des comptes Administrateur (RG-ADM-001 — aucun compte Super Administrateur ne peut etre cree ici).</p>
       </div>
+
+      {!chargement && (
+        <div className="civilis-stats-synthese">
+          <div className="civilis-stat-synthese-carte" style={{ animationDelay: '0ms' }}>
+            <div className="civilis-stat-synthese-icone"><Users size={18} /></div>
+            <div>
+              <div className="civilis-stat-synthese-valeur">{administrateurs.length}</div>
+              <div className="civilis-stat-synthese-libelle">Comptes Administrateur</div>
+            </div>
+          </div>
+          <div className="civilis-stat-synthese-carte" style={{ animationDelay: '40ms' }}>
+            <div className="civilis-stat-synthese-icone" style={{ background: 'var(--vert-100)', color: 'var(--vert-600)' }}><UserCheck size={18} /></div>
+            <div>
+              <div className="civilis-stat-synthese-valeur">{actifs}</div>
+              <div className="civilis-stat-synthese-libelle">Actifs</div>
+            </div>
+          </div>
+          <div className="civilis-stat-synthese-carte" style={{ animationDelay: '80ms' }}>
+            <div className="civilis-stat-synthese-icone" style={{ background: 'var(--rouge-100)', color: 'var(--rouge-600)' }}><UserX size={18} /></div>
+            <div>
+              <div className="civilis-stat-synthese-valeur">{inactifs}</div>
+              <div className="civilis-stat-synthese-libelle">Suspendus / revoques</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="civilis-grille-deux">
         <div className="civilis-carte">
@@ -60,11 +93,16 @@ export default function AdministrationPage() {
             <div className="civilis-skeleton" style={{ height: 160 }} />
           ) : (
             <table className="civilis-tableau">
-              <thead><tr><th>Identifiant</th><th>Statut</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Compte</th><th>Statut</th><th>Actions</th></tr></thead>
               <tbody>
                 {administrateurs.map((a) => (
                   <tr key={a.id}>
-                    <td>{a.identifiant}</td>
+                    <td>
+                      <div className="civilis-admin-identite">
+                        <span className="civilis-avatar-md">{initialesDe(a.identifiant)}</span>
+                        {a.identifiant}
+                      </div>
+                    </td>
                     <td><span className={`civilis-badge ${a.statut === 'ACTIF' ? 'succes' : 'alerte'}`}>{a.statut}</span></td>
                     <td className="civilis-actions-cellule">
                       <button className="civilis-btn secondaire" style={{ padding: '6px 12px', fontSize: 12.5 }} onClick={() => suspendre(a.id)}>Suspendre</button>

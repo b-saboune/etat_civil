@@ -1,12 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { apiClient } from '@/api/client'
 import type { RapportResumeDTO, RapportDTO, RapportSnapshot, CentreDTO } from '@/types'
-import { FileBarChart2, Download, Eye } from 'lucide-react'
+import { FileBarChart2, Download, Eye, Building2, Users, PieChart as PieChartIcon } from 'lucide-react'
 
 const TYPES_RAPPORT = [
-  { valeur: 'FICHES_PAR_CENTRE', libelle: 'Fiches indexees par centre' },
-  { valeur: 'FICHES_PAR_AGENT', libelle: 'Fiches indexees par agent' },
-  { valeur: 'REPARTITION_TYPE_ACTE', libelle: "Repartition par type d'acte" },
+  { valeur: 'FICHES_PAR_CENTRE', libelle: 'Fiches indexees par centre', icone: Building2 },
+  { valeur: 'FICHES_PAR_AGENT', libelle: 'Fiches indexees par agent', icone: Users },
+  { valeur: 'REPARTITION_TYPE_ACTE', libelle: "Repartition par type d'acte", icone: PieChartIcon },
 ]
 
 export default function RapportsPage() {
@@ -79,11 +80,23 @@ export default function RapportsPage() {
         <div className="civilis-carte">
           <h2>Nouveau rapport</h2>
           <form onSubmit={genererRapport} className="civilis-formulaire">
-            <label>Type de rapport
-              <select value={type} onChange={(e) => setType(e.target.value)}>
-                {TYPES_RAPPORT.map((t) => <option key={t.valeur} value={t.valeur}>{t.libelle}</option>)}
-              </select>
-            </label>
+            <label>Type de rapport</label>
+            <div className="civilis-rapport-types">
+              {TYPES_RAPPORT.map((t) => {
+                const Icone = t.icone
+                return (
+                  <button
+                    type="button"
+                    key={t.valeur}
+                    className={`civilis-rapport-type-carte ${type === t.valeur ? 'selectionne' : ''}`}
+                    onClick={() => setType(t.valeur)}
+                  >
+                    <span className="civilis-rapport-type-icone"><Icone size={16} /></span>
+                    <span className="civilis-rapport-type-libelle">{t.libelle}</span>
+                  </button>
+                )
+              })}
+            </div>
             {type === 'FICHES_PAR_CENTRE' && (
               <label>Centre (optionnel — tous les centres si vide)
                 <select value={centreId} onChange={(e) => setCentreId(e.target.value)}>
@@ -145,6 +158,23 @@ export default function RapportsPage() {
               ))}
             </tbody>
           </table>
+          {rapportOuvert.snapshot.colonnes.length === 2 && rapportOuvert.snapshot.lignes.length > 0 && (
+            <div className="civilis-rapport-graphique">
+              <ResponsiveContainer width="100%" height={Math.max(180, rapportOuvert.snapshot.lignes.length * 38)}>
+                <BarChart
+                  data={rapportOuvert.snapshot.lignes.map((ligne) => ({ categorie: String(ligne[0]), valeur: Number(ligne[1]) }))}
+                  layout="vertical"
+                  margin={{ left: 8, right: 24 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--gris-100)" horizontal={false} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                  <YAxis type="category" dataKey="categorie" width={140} tick={{ fontSize: 11.5 }} />
+                  <Tooltip />
+                  <Bar dataKey="valeur" fill="var(--bleu-600)" radius={[0, 6, 6, 0]} barSize={18} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
       )}
     </div>

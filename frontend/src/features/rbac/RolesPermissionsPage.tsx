@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { Fragment, useEffect, useState, type FormEvent } from 'react'
 import { apiClient } from '@/api/client'
 import type { RoleDTO, PermissionDTO } from '@/types'
 import { ShieldCheck, Plus, Save, Pencil, Check, X } from 'lucide-react'
@@ -116,6 +116,9 @@ export default function RolesPermissionsPage() {
                         ) : (
                           <>
                             {r.libelle}
+                            <span className="civilis-rbac-compte-badge" title="Permissions accordees">
+                              {selections[r.id]?.size ?? 0}/{permissions.length}
+                            </span>
                             <button
                               className="civilis-btn secondaire civilis-btn-icone"
                               onClick={() => { setRoleEnEdition(r.id); setLibelleEdition(r.libelle) }}
@@ -140,20 +143,28 @@ export default function RolesPermissionsPage() {
               </thead>
               <tbody>
                 {modules.map((module) => (
-                  permissions.filter((p) => p.module === module).map((p) => (
-                    <tr key={p.id}>
-                      <td>{module} · {p.action}</td>
-                      {roles.map((r) => (
-                        <td key={r.id} style={{ textAlign: 'center' }}>
-                          <input
-                            type="checkbox"
-                            checked={selections[r.id]?.has(p.id) ?? false}
-                            onChange={() => basculerPermission(r.id, p.id)}
-                          />
-                        </td>
-                      ))}
+                  <Fragment key={module}>
+                    <tr className="civilis-rbac-module-entete">
+                      <td colSpan={roles.length + 1}>{module}</td>
                     </tr>
-                  ))
+                    {permissions.filter((p) => p.module === module).map((p) => (
+                      <tr key={p.id}>
+                        <td style={{ paddingLeft: 20 }}>{p.action}</td>
+                        {roles.map((r) => (
+                          <td key={r.id} style={{ textAlign: 'center' }}>
+                            <label className="civilis-toggle-permission">
+                              <input
+                                type="checkbox"
+                                checked={selections[r.id]?.has(p.id) ?? false}
+                                onChange={() => basculerPermission(r.id, p.id)}
+                              />
+                              <span className="civilis-toggle-permission-rail" />
+                            </label>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </Fragment>
                 ))}
                 {permissions.length === 0 && <tr><td colSpan={roles.length + 1} className="civilis-vide">Aucune permission definie.</td></tr>}
               </tbody>

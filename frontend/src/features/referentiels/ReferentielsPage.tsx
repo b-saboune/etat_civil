@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { apiClient } from '@/api/client'
 import type { CommuneDTO, CentreDTO, SalleDTO, RayonnageDTO, TypeActeDTO } from '@/types'
-import { Building2, Plus, Power, PowerOff } from 'lucide-react'
+import { Building2, Plus, Power, PowerOff, MapPin, Archive, Rows3, Tags } from 'lucide-react'
 
 export default function ReferentielsPage() {
   const [communes, setCommunes] = useState<CommuneDTO[]>([])
@@ -102,11 +102,52 @@ export default function ReferentielsPage() {
     )
   }
 
+  const centresActifs = centres.filter((c) => c.statut === 'ACTIF').length
+  const typesActifs = typesActe.filter((t) => t.actif).length
+
   return (
     <div className="civilis-page civilis-entree-douce">
       <div className="civilis-page-entete">
         <h1><Building2 size={22} style={{ verticalAlign: 'text-bottom', marginRight: 8 }} />Referentiels</h1>
         <p>Communes, centres d'etat civil, salles d'archives, rayonnages et types d'actes (RG-REF-001 a RG-REF-004). Aucune suppression physique : uniquement desactivation.</p>
+      </div>
+
+      <div className="civilis-stats-synthese">
+        <div className="civilis-stat-synthese-carte" style={{ animationDelay: '0ms' }}>
+          <div className="civilis-stat-synthese-icone"><MapPin size={18} /></div>
+          <div>
+            <div className="civilis-stat-synthese-valeur">{communes.length}</div>
+            <div className="civilis-stat-synthese-libelle">Communes</div>
+          </div>
+        </div>
+        <div className="civilis-stat-synthese-carte" style={{ animationDelay: '40ms' }}>
+          <div className="civilis-stat-synthese-icone"><Building2 size={18} /></div>
+          <div>
+            <div className="civilis-stat-synthese-valeur">{centresActifs}<span style={{ fontSize: 13, color: 'var(--gris-400)', fontWeight: 600 }}> / {centres.length}</span></div>
+            <div className="civilis-stat-synthese-libelle">Centres actifs</div>
+          </div>
+        </div>
+        <div className="civilis-stat-synthese-carte" style={{ animationDelay: '80ms' }}>
+          <div className="civilis-stat-synthese-icone"><Archive size={18} /></div>
+          <div>
+            <div className="civilis-stat-synthese-valeur">{salles.length}</div>
+            <div className="civilis-stat-synthese-libelle">Salles d'archives</div>
+          </div>
+        </div>
+        <div className="civilis-stat-synthese-carte" style={{ animationDelay: '120ms' }}>
+          <div className="civilis-stat-synthese-icone"><Rows3 size={18} /></div>
+          <div>
+            <div className="civilis-stat-synthese-valeur">{rayonnages.length}</div>
+            <div className="civilis-stat-synthese-libelle">Rayonnages</div>
+          </div>
+        </div>
+        <div className="civilis-stat-synthese-carte" style={{ animationDelay: '160ms' }}>
+          <div className="civilis-stat-synthese-icone"><Tags size={18} /></div>
+          <div>
+            <div className="civilis-stat-synthese-valeur">{typesActifs}<span style={{ fontSize: 13, color: 'var(--gris-400)', fontWeight: 600 }}> / {typesActe.length}</span></div>
+            <div className="civilis-stat-synthese-libelle">Types d'actes actifs</div>
+          </div>
+        </div>
       </div>
 
       <div className="civilis-grille-tableaux">

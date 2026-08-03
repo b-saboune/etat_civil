@@ -1151,3 +1151,111 @@ body { color: var(--gris-900); }
   background: white; color: var(--rouge-600, #b42318); border: 1.5px solid #f3c1ba; box-shadow: none;
 }
 .civilis-btn-danger:hover:not(:disabled) { background: var(--rouge-100, #fdecea); border-color: var(--rouge-600, #b42318); }
+
+/* =====================================================================
+   Nouvelle vague de creativite : Referentiels, Roles & permissions,
+   Administration, Journal, Rapports + polish transversal.
+   Toujours en bloc additif (regle de non-destruction) : aucune propriete
+   overflow touchee sur un ancetre de .civilis-sidebar.
+   ===================================================================== */
+
+:root {
+  --indigo-600: #4338ca;
+  --indigo-700: #3730a3;
+  --degrade-institutionnel: linear-gradient(135deg, var(--bleu-700) 0%, var(--indigo-600) 100%);
+  --ombre-couleur: 0 8px 24px -8px rgba(67, 56, 202, 0.35);
+}
+
+/* ---------- Polish transversal : filet lumineux au survol de toute carte ---------- */
+.civilis-carte { position: relative; }
+.civilis-carte::after {
+  content: ''; position: absolute; top: 0; left: 18px; right: 18px; height: 2px; border-radius: 0 0 3px 3px;
+  background: var(--degrade-institutionnel); opacity: 0; transform: scaleX(0.85); transform-origin: center;
+  transition: opacity var(--transition-rapide), transform var(--transition-douce);
+  pointer-events: none;
+}
+.civilis-carte:hover::after { opacity: 1; transform: scaleX(1); }
+
+/* ---------- Bandeau de statistiques de synthese (reutilisable : Referentiels, Administration) ---------- */
+.civilis-stats-synthese { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 22px; }
+.civilis-stat-synthese-carte {
+  background: white; border: 1px solid var(--gris-200); border-radius: var(--radius); padding: 16px 18px;
+  display: flex; align-items: center; gap: 12px; box-shadow: var(--ombre-xs);
+  animation: entree-echelonnee var(--transition-douce) ease-out both;
+  transition: transform var(--transition-rapide), box-shadow var(--transition-rapide);
+}
+.civilis-stat-synthese-carte:hover { transform: translateY(-2px); box-shadow: var(--ombre-sm); }
+.civilis-stat-synthese-icone {
+  width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  background: var(--bleu-100); color: var(--bleu-700); flex-shrink: 0;
+}
+.civilis-stat-synthese-valeur { font-size: 21px; font-weight: 800; color: var(--gris-900); letter-spacing: -0.5px; line-height: 1.15; }
+.civilis-stat-synthese-libelle { font-size: 11px; color: var(--gris-500); text-transform: uppercase; letter-spacing: 0.3px; font-weight: 600; }
+
+/* ---------- RBAC : matrice modernisee (groupes de modules + interrupteurs) ---------- */
+.civilis-rbac-module-entete td {
+  background: var(--gris-075); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--bleu-700); padding: 9px 10px !important; border-bottom: 1px solid var(--gris-200) !important;
+}
+.civilis-rbac-compte-badge {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 18px; padding: 0 6px;
+  border-radius: 999px; background: var(--bleu-100); color: var(--bleu-700); font-size: 10.5px; font-weight: 800;
+}
+.civilis-toggle-permission { position: relative; display: inline-block; width: 34px; height: 19px; cursor: pointer; }
+.civilis-toggle-permission input { opacity: 0; width: 0; height: 0; position: absolute; }
+.civilis-toggle-permission-rail {
+  position: absolute; inset: 0; background: var(--gris-300); border-radius: 999px; transition: background var(--transition-rapide);
+}
+.civilis-toggle-permission-rail::before {
+  content: ''; position: absolute; height: 13px; width: 13px; left: 3px; top: 3px; background: white; border-radius: 50%;
+  transition: transform var(--transition-rapide); box-shadow: var(--ombre-xs);
+}
+.civilis-toggle-permission input:checked + .civilis-toggle-permission-rail { background: var(--vert-500); }
+.civilis-toggle-permission input:checked + .civilis-toggle-permission-rail::before { transform: translateX(15px); }
+.civilis-toggle-permission input:focus-visible + .civilis-toggle-permission-rail { box-shadow: var(--ombre-focus); }
+
+/* ---------- Administration : cartes de comptes avec avatar ---------- */
+.civilis-admin-identite { display: flex; align-items: center; gap: 10px; }
+
+/* ---------- Journal : timeline verticale + filtres en puces ---------- */
+.civilis-journal-filtres { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.civilis-filtre-puce {
+  padding: 6px 14px; border-radius: 999px; border: 1.5px solid var(--gris-200); background: white; font-size: 12.5px;
+  font-weight: 600; color: var(--gris-600); cursor: pointer; transition: all var(--transition-rapide);
+}
+.civilis-filtre-puce:hover { border-color: var(--bleu-400); color: var(--bleu-700); }
+.civilis-filtre-puce.actif { background: var(--degrade-institutionnel); border-color: transparent; color: white; box-shadow: var(--ombre-couleur); }
+
+.civilis-timeline { position: relative; }
+.civilis-timeline-item { position: relative; padding: 0 0 20px 32px; animation: entree-echelonnee var(--transition-douce) ease-out both; }
+.civilis-timeline-item::before {
+  content: ''; position: absolute; left: 9px; top: 20px; bottom: -2px; width: 2px; background: var(--gris-200);
+}
+.civilis-timeline-item:last-child::before { display: none; }
+.civilis-timeline-point {
+  position: absolute; left: 0; top: 1px; width: 20px; height: 20px; border-radius: 50%;
+  box-shadow: 0 0 0 4px white; flex-shrink: 0;
+}
+.civilis-timeline-carte {
+  background: white; border: 1px solid var(--gris-200); border-radius: var(--radius-sm); padding: 11px 14px;
+  box-shadow: var(--ombre-xs); transition: box-shadow var(--transition-rapide), transform var(--transition-rapide);
+}
+.civilis-timeline-carte:hover { box-shadow: var(--ombre-sm); transform: translateX(2px); }
+.civilis-timeline-module { font-weight: 700; font-size: 12.5px; }
+.civilis-timeline-meta { font-size: 11px; color: var(--gris-500); display: flex; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
+
+/* ---------- Rapports : cartes de selection du type + mini-graphique ---------- */
+.civilis-rapport-types { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 6px; }
+.civilis-rapport-type-carte {
+  border: 1.5px solid var(--gris-200); border-radius: var(--radius); padding: 14px 12px; cursor: pointer; text-align: left;
+  background: white; transition: all var(--transition-rapide); display: flex; flex-direction: column; gap: 8px;
+}
+.civilis-rapport-type-carte:hover { border-color: var(--bleu-400); transform: translateY(-2px); box-shadow: var(--ombre-sm); }
+.civilis-rapport-type-carte.selectionne { border-color: var(--bleu-600); background: var(--bleu-100); box-shadow: var(--ombre-couleur); }
+.civilis-rapport-type-icone {
+  width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
+  background: var(--bleu-100); color: var(--bleu-700);
+}
+.civilis-rapport-type-carte.selectionne .civilis-rapport-type-icone { background: white; }
+.civilis-rapport-type-libelle { font-size: 12.5px; font-weight: 700; color: var(--gris-800); line-height: 1.3; }
+.civilis-rapport-graphique { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--gris-100); }

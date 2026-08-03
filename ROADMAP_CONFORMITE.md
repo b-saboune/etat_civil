@@ -4,6 +4,43 @@ Ce document trace, honnetement, l'ecart entre le Prompt Maitre et le code a un i
 Objectif : que quiconque reprenne ce depot sache exactement ce qui est solide et ce qui reste a faire
 avant une mise en production reelle.
 
+## Innovation et creativite visuelle, 2e vague : Referentiels, Roles & permissions, Administration, Journal, Rapports
+
+Demande explicite : etendre le meme travail de creativite/style/design a "toutes les fonctionnalites",
+apres le premier lot (Tableau de bord/Recherche/Indexation/Personnes/Registres/Parametrage) et la
+refonte d'Agents & utilisateurs. Les 5 ecrans restes les plus sobres recoivent chacun un ajout
+distinct, plus un polish transversal qui profite a toute l'application sans toucher page par page :
+
+- **Polish transversal** : chaque `.civilis-carte` de l'application recoit desormais un filet
+  degrade (bleu institutionnel -> indigo) qui apparait sous le bord superieur au survol, coherent
+  avec la nouvelle paire de tokens `--degrade-institutionnel`/`--ombre-couleur`. Additif uniquement
+  (`.civilis-carte::after`, aucune regle existante retiree).
+- **Referentiels** : bandeau de synthese en tete (communes, centres actifs/total, salles,
+  rayonnages, types d'actes actifs/total) — chiffres derives des donnees deja chargees, aucune
+  statistique inventee.
+- **Roles & permissions** : la matrice plate de cases a cocher devient une matrice groupee par
+  module (ligne d'en-tete distincte par module, coherent avec RG-RBAC-001) avec des interrupteurs
+  visuels a la place des checkboxes brutes, et un badge "X/Y" sur chaque colonne de role affichant
+  en temps reel le nombre de permissions accordees.
+- **Administration** : bandeau de synthese (total, actifs, suspendus/revoques — a noter : le
+  schema ne distingue pas ces deux derniers etats, `suspendre` et `revoquer` aboutissent tous deux
+  au statut `INACTIF` cote backend, la carte reflete donc fidelement cette realite plutot que d'en
+  inventer une troisieme) et avatar a initiales par compte, coherent avec le style introduit sur
+  Agents & utilisateurs.
+- **Journal d'activite** : le tableau plat devient une timeline verticale (points colores par
+  module, couleur derivee de facon deterministe du nom du module) avec des puces de filtre par
+  module generees a partir des entrees reellement chargees (aucun module fictif).
+- **Rapports** : le menu deroulant de type de rapport devient trois cartes cliquables avec icone
+  dediee (centre/agent/repartition), et la consultation d'un rapport genere affiche desormais,
+  en plus du tableau brut, un graphique en barres (recharts, deja une dependance du projet) quand
+  l'instantane a exactement 2 colonnes (libelle + valeur) — ce qui couvre les trois types de
+  rapports existants sans supposer une structure differente.
+
+Toutes les additions reutilisent les tokens existants (ombres, rayons, transitions, echelle de
+gris) et n'introduisent qu'une seule nouvelle paire de tokens (`--indigo-600/700`,
+`--degrade-institutionnel`, `--ombre-couleur`). Verifie : `tsc --noEmit` sans erreur, accolades CSS
+equilibrees (465/465).
+
 ## Deuxieme echec reel de la migration V5 (retour utilisateur) : abandon de l'index fonctionnel
 
 Le premier correctif (forme a un seul argument `unaccent(texte)`) a echoue a son tour au demarrage
