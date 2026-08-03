@@ -1298,3 +1298,125 @@ body { color: var(--gris-900); }
 @media (prefers-reduced-motion: reduce) {
   .civilis-page-entete, .civilis-page-entete::before, .civilis-page-entete h1 svg { animation: none; }
 }
+
+/* =====================================================================
+   VAGUE 4 — VERITABLE SOCLE DE DESIGN SYSTEM (echelles nommees et
+   documentees : typographie, espacements, z-index, variantes semantiques
+   completes). Bloc additif (regle de non-destruction) : les valeurs brutes
+   deja utilisees dans les regles existantes plus haut ne sont PAS
+   retouchees (aucune regression visuelle), mais tout nouveau composant
+   (Modal, badges completes, futures pages) s'appuie desormais sur ces
+   variables nommees plutot que sur des nombres bruts disperses.
+   ===================================================================== */
+:root {
+  /* Echelle typographique (paliers nommes, alignes sur les tailles deja
+     observees dans l'application : 11/12.5/14/15/17/19/22/26px) */
+  --text-xs: 11px;
+  --text-sm: 12.5px;
+  --text-base: 14px;
+  --text-md: 15px;
+  --text-lg: 17px;
+  --text-xl: 19px;
+  --text-2xl: 22px;
+  --text-3xl: 26px;
+  --leading-serre: 1.15;
+  --leading-normal: 1.5;
+  --leading-aere: 1.7;
+
+  /* Echelle d'espacement (base 4px, comme la plupart des design systems
+     institutionnels : GOV.UK, Carbon, Fluent) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+
+  /* Echelle de superposition (evite les conflits de z-index empiriques) */
+  --z-dropdown: 20;
+  --z-sticky: 10;
+  --z-drawer-mobile: 50;
+  --z-modal-backdrop: 100;
+  --z-modal: 101;
+  --z-toast: 200;
+
+  /* Alias semantiques (un seul nom a retenir par intention, quel que soit
+     le ton de couleur choisi en interne) */
+  --couleur-succes: var(--vert-600);
+  --couleur-succes-fond: var(--vert-100);
+  --couleur-danger: var(--rouge-600);
+  --couleur-danger-fond: var(--rouge-100);
+  --couleur-avertissement: var(--ocre-600);
+  --couleur-avertissement-fond: var(--ocre-100);
+  --couleur-info: var(--bleu-600);
+  --couleur-info-fond: var(--bleu-100);
+
+  /* Duree/rythme des animations (alias explicites de var(--transition-*)
+     existantes, pour un vocabulaire unique cote motion design) */
+  --duree-rapide: var(--transition-rapide);
+  --duree-douce: var(--transition-douce);
+}
+
+/* ---------- Badges : jeu de variantes semantique complet (il manquait
+   "info" et "avertissement" — chaque page inventait ses propres classes
+   ad hoc, ex. "neutre"/"alerte" avec des sens parfois divergents) ---------- */
+.civilis-badge.info { background: var(--couleur-info-fond); color: var(--couleur-info); }
+.civilis-badge.avertissement { background: var(--couleur-avertissement-fond); color: var(--couleur-avertissement); }
+.civilis-badge.danger { background: var(--couleur-danger-fond); color: var(--couleur-danger); }
+
+/* ---------- Bouton "fantome" (tertiaire) : pour les actions secondaires
+   dans les barres d'outils denses, sans le poids visuel d'un bouton
+   secondaire borde ---------- */
+.civilis-btn.fantome {
+  background: transparent; color: var(--bleu-700); border: none; box-shadow: none; padding: 8px 12px;
+}
+.civilis-btn.fantome:hover:not(:disabled) { background: var(--gris-075); }
+
+/* ---------- Modale accessible (composants/ui/Modal.tsx) : premier vrai
+   composant de dialogue de l'application — remplace window.prompt() /
+   window.confirm() natifs, non stylables et incoherents avec l'identite
+   visuelle, sur les actions sensibles (ex. restauration de sauvegarde). ---------- */
+.civilis-modal-voile {
+  position: fixed; inset: 0; z-index: var(--z-modal-backdrop);
+  background: rgba(10, 21, 41, 0.48);
+  backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-4);
+  animation: civilis-voile-entree var(--duree-rapide) ease-out;
+}
+.civilis-modal {
+  position: relative; z-index: var(--z-modal);
+  background: white; border-radius: var(--radius-lg); box-shadow: var(--ombre-lg);
+  width: 100%; max-width: 480px; max-height: calc(100vh - 64px); overflow-y: auto;
+  animation: civilis-modal-entree var(--duree-douce) cubic-bezier(0.16, 1, 0.3, 1);
+}
+.civilis-modal-lg { max-width: 680px; }
+.civilis-modal-entete {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3);
+  padding: var(--space-5) var(--space-6) var(--space-3);
+}
+.civilis-modal-entete h2 { margin: 0; font-size: var(--text-xl); font-weight: 800; color: var(--gris-900); letter-spacing: -0.3px; }
+.civilis-modal-fermer {
+  background: transparent; border: none; cursor: pointer; color: var(--gris-500);
+  width: 32px; height: 32px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;
+  transition: background var(--duree-rapide), color var(--duree-rapide); flex-shrink: 0;
+}
+.civilis-modal-fermer:hover { background: var(--gris-075); color: var(--gris-900); }
+.civilis-modal-fermer:focus-visible { box-shadow: var(--ombre-focus); outline: none; }
+.civilis-modal-corps { padding: 0 var(--space-6) var(--space-5); font-size: var(--text-base); color: var(--gris-700); line-height: var(--leading-normal); }
+.civilis-modal-pied {
+  display: flex; justify-content: flex-end; gap: var(--space-3);
+  padding: var(--space-4) var(--space-6); border-top: 1px solid var(--gris-100); background: var(--gris-025);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+@keyframes civilis-voile-entree { from { opacity: 0; } to { opacity: 1; } }
+@keyframes civilis-modal-entree {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (max-width: 560px) {
+  .civilis-modal-voile { padding: 0; align-items: flex-end; }
+  .civilis-modal { max-width: 100%; border-radius: var(--radius-lg) var(--radius-lg) 0 0; max-height: 88vh; }
+}

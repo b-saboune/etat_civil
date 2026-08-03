@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { apiClient } from '@/api/client'
 import { useAuth } from '@/auth/AuthContext'
 import { Settings, DatabaseBackup, RotateCcw, ShieldCheck, ShieldAlert, Clock, HardDrive, AlertTriangle } from 'lucide-react'
+import Modal from '@/components/ui/Modal'
 
 interface Parametre { id: number; cle: string; valeur: string; categorie?: string }
 interface Sauvegarde { id: number; dateExecution: string; type: string; statut: string; tailleOctets?: number }
@@ -25,6 +26,13 @@ export default function ParametragePage() {
   const [editionCle, setEditionCle] = useState<number | null>(null)
   const [valeurEdition, setValeurEdition] = useState('')
   const [message, setMessage] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
+  // Modale de restauration (RG-PAR-001) : remplace l'ancien window.prompt() natif,
+  // non stylable et incoherent avec l'identite visuelle de l'application. La
+  // verification de la phrase exacte reste faite cote serveur (le controle cote
+  // client ci-dessous ne fait que desactiver le bouton tant que la saisie ne
+  // correspond pas, par confort — ce n'est jamais la seule barriere de securite).
+  const [sauvegardeAConfirmer, setSauvegardeAConfirmer] = useState<Sauvegarde | null>(null)
+  const [saisieConfirmation, setSaisieConfirmation] = useState('')
 
   const estSuperAdmin = utilisateur?.typeCompte === 'SUPER_ADMIN'
 
@@ -61,19 +69,24 @@ export default function ParametragePage() {
     }
   }
 
-  const demanderRestauration = async (sauvegarde: Sauvegarde) => {
-    // RG-PAR-001 : confirmation renforcee — l'utilisateur doit saisir la
-    // phrase exacte, verifiee a nouveau cote serveur (jamais une simple
-    // confirmation cosmetique cote client).
-    const saisie = window.prompt(
-      `Cette action ecrase irreversiblement la base de donnees actuelle avec la sauvegarde du ${new Date(sauvegarde.dateExecution).toLocaleString('fr-FR')}.\n\nPour confirmer, tapez exactement :\n${PHRASE_CONFIRMATION}`
-    )
-    if (saisie === null) return
+  const demanderRestauration = (sauvegarde: Sauvegarde) => {
+    setSaisieConfirmation('')
+    setSauvegardeAConfirmer(sauvegarde)
+  }
+
+  const confirmerRestauration = async () => {
+    if (!sauvegardeAConfirmer) return
+    const sauvegarde = sauvegardeAConfirmer
     setRestaurationEnCours(sauvegarde.id)
     setMessage(null)
     try {
-      await apiClient.post(`/sauvegardes/${sauvegarde.id}/restaurer`, { confirmation: saisie })
+      // RG-PAR-001 : la phrase saisie est envoyee telle quelle — la verification
+      // faisant foi reste cote serveur, jamais une simple confirmation cosmetique
+      // cote client (le bouton n'est qu'une aide, desactive tant que la saisie ne
+      // correspond pas exactement, cf. disabled ci-dessous).
+      await apiClient.post(`/sauvegardes/${sauvegarde.id}/restaurer`, { confirmation: saisieConfirmation })
       setMessage({ type: 'succes', texte: 'Restauration executee avec succes.' })
+      setSauvegardeAConfirmer(null)
     } catch (err: any) {
       setMessage({ type: 'erreur', texte: err?.response?.data?.message ?? 'Restauration impossible.' })
     } finally {
@@ -217,6 +230,49 @@ export default function ParametragePage() {
           </div>
         </div>
       )}
+
+      <Modal
+        ouvert={sauvegardeAConfirmer !== null}
+        onFermer={() => setSauvegardeAConfirmer(null)}
+        titre="Restaurer une sauvegarde"
+        bloquant={restaurationEnCours !== null}
+        pied={
+          <>
+            <button className="civilis-btn secondaire" onClick={() => setSauvegardeAConfirmer(null)} disabled={restaurationEnCours !== null}>
+              Annuler
+            </button>
+            <button
+              className="civilis-btn civilis-btn-danger"
+              onClick={confirmerRestauration}
+              disabled={saisieConfirmation !== PHRASE_CONFIRMATION || restaurationEnCours !== null}
+            >
+              {restaurationEnCours !== null ? 'Restauration...' : 'Restaurer definitivement'}
+            </button>
+          </>
+        }
+      >
+        {sauvegardeAConfirmer && (
+          <>
+            <div className="civilis-avertissement" style={{ marginBottom: 16 }}>
+              <AlertTriangle size={16} />
+              <span>
+                Cette action ecrase irreversiblement la base de donnees actuelle avec la sauvegarde du{' '}
+                <strong>{new Date(sauvegardeAConfirmer.dateExecution).toLocaleString('fr-FR')}</strong>. Elle ne peut pas etre annulee.
+              </span>
+            </div>
+            <label className="civilis-field" style={{ marginBottom: 0 }}>
+              Pour confirmer, tapez exactement : <strong>{PHRASE_CONFIRMATION}</strong>
+              <input
+                autoFocus
+                value={saisieConfirmation}
+                onChange={(e) => setSaisieConfirmation(e.target.value)}
+                placeholder={PHRASE_CONFIRMATION}
+                disabled={restaurationEnCours !== null}
+              />
+            </label>
+          </>
+        )}
+      </Modal>
     </div>
   )
 }

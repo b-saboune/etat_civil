@@ -4,6 +4,82 @@ Ce document trace, honnetement, l'ecart entre le Prompt Maitre et le code a un i
 Objectif : que quiconque reprenne ce depot sache exactement ce qui est solide et ce qui reste a faire
 avant une mise en production reelle.
 
+## Refonte UI/UX complete (demande "equipe d'experts" niveau gouvernemental/bancaire) — Vague 1/5 : fondations du design system
+
+Demande explicite de l'utilisateur : une refonte complete au niveau Design System (pas seulement du
+CSS), inspiree GOV.UK/Material 3/Carbon/Fluent, avec methodologie en 12 sections (tokens, composants,
+CSS, animations, micro-interactions, UX, responsive, accessibilite WCAG 2.2 AA, performance). Vu
+l'ampleur (~15 ecrans x 12 categories), un plan en 5 vagues a ete convenu avec l'utilisateur avant de
+commencer (question posee explicitement, reponse : etablir un plan puis executer) :
+
+1. **Vague 1 (ce lot)** : fondations du design system + composants transverses les plus manquants.
+2. Vague 2 : shell applicatif (sidebar, navbar, footer, breadcrumb, pagination, menus).
+3. Vague 3 : audit accessibilite WCAG 2.2 AA + responsive.
+4. Vague 4 : polish ecran par ecran + micro-interactions/animations.
+5. Vague 5 : performance + verification finale + publication.
+
+### Audit prealable (avant de toucher au code)
+
+Contrairement a une hypothese initiale, le design system existant (styles.css, ~1300 lignes apres
+les 3 vagues precedentes) s'est revele **deja largement coherent** : echelle de gris complete
+(025 a 900), rayons harmonises (`--radius-sm/--radius/--radius-lg/--radius-xl`), ombres a plusieurs
+couches (`--ombre-xs` a `--ombre-lg`), jeton de focus unique (`--ombre-focus`) deja reutilise a 5
+endroits. Une reecriture complete aurait donc ete disproportionnee et risquee (aucun apercu visuel
+possible depuis l'environnement de developpement : ni Java 17 ni serveur Postgres dans le bac a
+sable, verification uniquement via `tsc --noEmit`, equilibre des accolades CSS, et inspection du
+poste reel de l'utilisateur). Les ecarts reels identifies et corriges dans cette vague :
+
+- **Aucune echelle typographique ni d'espacement nommee** : les tailles de police et paddings
+  etaient des valeurs numeriques dispersees (13.5px, 22px, 14px...) sans vocabulaire partage.
+  Ajout de `--text-xs` a `--text-3xl` et `--space-1` a `--space-8`, alignes sur les valeurs deja
+  utilisees dans l'application (pas de changement visuel forcee, socle pour les nouveaux composants
+  et les vagues suivantes).
+- **Aucune echelle de z-index** : ajout de `--z-dropdown/--z-sticky/--z-drawer-mobile/
+  --z-modal-backdrop/--z-modal/--z-toast` pour eviter les conflits empiriques a l'avenir.
+- **Alias semantiques manquants** : `--couleur-succes/--couleur-danger/--couleur-avertissement/
+  --couleur-info` (+ fonds associes), un seul nom a retenir par intention plutot que de choisir
+  entre `--vert-600`/`--rouge-600`/`--ocre-600`/`--bleu-600` a chaque nouvel usage.
+- **Badges incomplets** : `.civilis-badge` n'avait que 4 variantes ad hoc (`exacte`, `approchee`,
+  `succes`, `neutre`, `alerte`) sans variante `info` ni `avertissement` explicite — ajoutees.
+- **Bouton tertiaire absent** : ajout de `.civilis-btn.fantome` pour les actions secondaires dans
+  les barres d'outils denses.
+- **Aucun composant de modale/dialogue dans toute l'application** : les confirmations sensibles
+  passaient soit par une ligne de tableau depliee (Registres > deplacement), soit — le plus
+  problematique — par un **`window.prompt()` natif du navigateur** pour la restauration de
+  sauvegarde (RG-PAR-001), une action irreversible sur la base de donnees. Un `window.prompt()`
+  n'est pas stylable, casse totalement l'identite visuelle institutionnelle et est deconseille par
+  toutes les references citees par l'utilisateur (GOV.UK, Material 3, Carbon, Fluent). Creation
+  d'un vrai composant `components/ui/Modal.tsx` : `role="dialog"` + `aria-modal` + `aria-labelledby`,
+  piege de focus (Tab/Shift+Tab boucle a l'interieur), focus depose sur la modale a l'ouverture et
+  restitue au declencheur a la fermeture, fermeture par Echap et par clic sur le voile (sauf variante
+  `bloquant` pendant une action en cours), anime (fondu + zoom leger, respecte la regle globale
+  `prefers-reduced-motion` deja en place). Le flux de restauration de sauvegarde dans Parametrage
+  utilise desormais cette modale a la place de `window.prompt()` : logique metier strictement
+  inchangee (meme endpoint `POST /sauvegardes/{id}/restaurer`, meme corps `{ confirmation }`, la
+  verification de la phrase exacte reste faite cote serveur) — seul le bouton de confirmation est
+  desormais desactive tant que la saisie ne correspond pas exactement, en plus de la verification
+  serveur (jamais une confirmation cosmetique cote client uniquement).
+
+### Perimetre volontairement reporte aux vagues suivantes
+
+- Remplacement du deplacement de registre (ligne depliee) par la meme modale : reporte vague 4
+  (risque plus eleve car imbrique dans une logique de tableau existante, a traiter avec plus de
+  recul).
+- Pagination des tableaux (Registres, resultats de recherche, Journal) : aucun composant de
+  pagination n'existe actuellement et aucun endpoint backend ne supporte page/size — introduire une
+  pagination cote client sans verifier le volume reel de donnees aurait ete premature ; a evaluer
+  en vague 2 avec une vraie mesure du besoin plutot qu'une supposition.
+- Refonte de la sidebar/navbar/footer/breadcrumb (vague 2), audit contraste/clavier systematique
+  (vague 3), polish ecran par ecran restant (vague 4).
+
+### Verification effectuee
+
+`tsc --noEmit` propre. Equilibre des accolades CSS verifie programmatiquement (506 ouvrantes /
+506 fermantes). `npm run build` non verifiable dans le bac a sable de developpement dans le temps
+imparti (le processus `vite build` prend ~57s reel, superieur au plafond d'execution de l'outil
+shell disponible ici) — comme pour les vagues precedentes, la compilation de production reste a
+confirmer par l'utilisateur sur son poste reel.
+
 ## Innovation et creativite visuelle, 2e vague : Referentiels, Roles & permissions, Administration, Journal, Rapports
 
 Demande explicite : etendre le meme travail de creativite/style/design a "toutes les fonctionnalites",
