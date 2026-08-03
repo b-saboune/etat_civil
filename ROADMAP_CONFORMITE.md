@@ -114,6 +114,51 @@ Audit clavier exhaustif de chaque ecran restant (vague 4, au fil du polish) ; su
 
 `tsc --noEmit` propre. Equilibre des accolades CSS (529/529).
 
+## Refonte UI/UX complete — Vague 4/5 : micro-interactions (retour visuel des actions)
+
+Perimetre resserre sur un ecart concret et mesure plutot qu'un polish diffus "page par page" :
+le retour visuel pendant une action asynchrone (section 5 "Micro-interactions" du prompt :
+"chaque action doit fournir un retour visuel clair").
+
+### Constat
+
+Recherche systematique des boutons desactives pendant une action (`disabled={enCours}` ou
+equivalent) : 25 occurrences trouvees dans 9 ecrans, mais seuls Connexion et Recherche
+affichaient reellement un fileur de chargement (`.civilis-spinner`) — les autres se contentaient
+de desactiver le bouton et, au mieux, de changer son texte ("Enregistrement..."), sans signal
+visuel immediatement reconnaissable pendant un appel reseau.
+
+### Corrections
+
+Fileur de chargement ajoute sur les boutons d'action principaux la ou il manquait : creation de
+fiche d'indexation, creation de personne, ajout de lien de parente, confirmation de fusion de
+doublons, confirmation de deplacement de registre, creation de registre, generation de rapport,
+execution de sauvegarde, confirmation de restauration (modale). Nouvelle variante
+`.civilis-spinner.sombre` pour les boutons a fond clair (`.civilis-btn-danger`) ou le fileur blanc
+existant serait invisible sur fond blanc.
+
+Animation de sortie des toasts (`ToastHost.tsx`) : l'entree etait deja animee (translation +
+fondu) mais la sortie etait instantanee (le composant se demontait des que retire du bus). Le
+toast reste desormais affiche avec une classe `sortant` le temps de l'animation (200ms) avant
+d'etre reellement retire de l'etat, sans toucher a `lib/toast.ts` (le bus d'evenements metier
+reste inchange, la temporisation est purement un detail d'affichage du composant hote).
+
+### Volontairement non fait (justifie)
+
+- Conversion de la fusion de doublons et du deplacement de registre vers la modale generique
+  (`components/ui/Modal.tsx`) : reconsidere apres analyse -- ces deux flux sont deja proteges par
+  une case a cocher de confirmation explicite avant soumission, un pattern deja etabli et adequat
+  dans cette application (a la difference de l'ancien `window.prompt()` de restauration de
+  sauvegarde, qui etait un vrai anti-pattern navigateur non stylable). Les transformer en modale
+  aurait ajoute de la complexite sans corriger un probleme reel.
+- Skeleton de chargement initial sur Indexation (registres/types d'actes charges au montage) :
+  les champs s'affichent vides puis se remplissent, sans etat casse ni retard perceptible en
+  pratique -- ecart mineur, non traite pour rester proportionne.
+
+### Verification effectuee
+
+`tsc --noEmit` propre. Equilibre des accolades CSS (534/534).
+
 ## Refonte UI/UX complete (demande "equipe d'experts" niveau gouvernemental/bancaire) — Vague 1/5 : fondations du design system
 
 Demande explicite de l'utilisateur : une refonte complete au niveau Design System (pas seulement du

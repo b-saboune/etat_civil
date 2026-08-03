@@ -299,7 +299,10 @@ export default function RegistresPage() {
                               Je confirme ce deplacement physique (RG-REG-006)
                             </label>
                             <div style={{ display: 'flex', gap: 8, marginTop: 22 }}>
-                              <button className="civilis-btn primaire" type="submit" disabled={!confirmationDeplacement || !nouveauRayonnage || actionEnCours === `deplacer-${r.id}`}>Confirmer</button>
+                              <button className="civilis-btn primaire" type="submit" disabled={!confirmationDeplacement || !nouveauRayonnage || actionEnCours === `deplacer-${r.id}`}>
+                                {actionEnCours === `deplacer-${r.id}` && <span className="civilis-spinner" />}
+                                {actionEnCours === `deplacer-${r.id}` ? 'Deplacement...' : 'Confirmer'}
+                              </button>
                               <button className="civilis-btn secondaire" type="button" onClick={() => setDeplacerId(null)}>Annuler</button>
                             </div>
                           </div>
@@ -412,7 +415,8 @@ export default function RegistresPage() {
             </label>
           </div>
           <button className="civilis-btn primaire" type="submit" disabled={actionEnCours === 'creation'} style={{ width: 'fit-content', marginTop: 8 }}>
-            <Plus size={14} style={{ marginRight: 6 }} />Creer le registre
+            {actionEnCours === 'creation' ? <span className="civilis-spinner" /> : <Plus size={14} style={{ marginRight: 6 }} />}
+            {actionEnCours === 'creation' ? 'Creation...' : 'Creer le registre'}
           </button>
         </form>
       </div>

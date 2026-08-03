@@ -160,6 +160,7 @@ export default function PersonnesPage() {
               <input type="date" value={dateNaissance} onChange={(e) => setDateNaissance(e.target.value)} />
             </label>
             <button className="civilis-btn primaire" type="submit" disabled={enCours}>
+              {enCours && <span className="civilis-spinner" />}
               {enCours ? 'Enregistrement...' : 'Enregistrer'}
             </button>
             {message && <div className={`civilis-alerte-${message.type === 'succes' ? 'succes' : 'erreur'}`}>{message.texte}</div>}
@@ -261,6 +262,7 @@ export default function PersonnesPage() {
                 </select>
               </label>
               <button className="civilis-btn primaire" type="submit" disabled={enCoursLien || !apparenteSelectionne}>
+                {enCoursLien && <span className="civilis-spinner" />}
                 {enCoursLien ? 'Enregistrement...' : 'Ajouter le lien'}
               </button>
             </form>
@@ -347,6 +349,7 @@ export default function PersonnesPage() {
               Je confirme la fusion de <strong>&nbsp;{source.nom} {source.prenoms}&nbsp;</strong> vers <strong>&nbsp;{cible.nom} {cible.prenoms}&nbsp;</strong> — action irreversible sur le rattachement des actes.
             </label>
             <button className="civilis-btn primaire" type="submit" disabled={!confirmationFusion || enCoursFusion || source.id === cible.id}>
+              {enCoursFusion && <span className="civilis-spinner" />}
               {enCoursFusion ? 'Fusion en cours...' : 'Confirmer la fusion'}
             </button>
             {source.id === cible.id && <p style={{ color: 'var(--rouge-600, #b42318)', fontSize: 13, marginTop: 8 }}>La source et la cible doivent etre distinctes.</p>}

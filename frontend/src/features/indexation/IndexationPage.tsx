@@ -177,6 +177,7 @@ export default function IndexationPage() {
           </button>
 
           <button className="civilis-btn primaire" type="submit" disabled={enCours} style={{ marginTop: 14 }}>
+            {enCours && <span className="civilis-spinner" />}
             {enCours ? 'Enregistrement...' : 'Creer la fiche d’indexation'}
           </button>
           {message && <div className={`civilis-alerte-${message.type === 'succes' ? 'succes' : 'erreur'}`}>{message.texte}</div>}

@@ -112,6 +112,7 @@ export default function RapportsPage() {
               <input type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} required />
             </label>
             <button className="civilis-btn primaire" type="submit" disabled={enCours}>
+              {enCours && <span className="civilis-spinner" />}
               {enCours ? 'Generation...' : 'Generer le rapport'}
             </button>
             {message && <div className={`civilis-alerte-${message.type === 'succes' ? 'succes' : 'erreur'}`}>{message.texte}</div>}

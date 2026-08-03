@@ -195,7 +195,7 @@ export default function ParametragePage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2>Sauvegardes</h2>
               <button className="civilis-btn primaire" onClick={executerSauvegarde} disabled={enCours}>
-                <DatabaseBackup size={15} style={{ marginRight: 6 }} />
+                {enCours ? <span className="civilis-spinner" /> : <DatabaseBackup size={15} style={{ marginRight: 6 }} />}
                 {enCours ? 'Execution...' : 'Executer maintenant'}
               </button>
             </div>
@@ -246,6 +246,7 @@ export default function ParametragePage() {
               onClick={confirmerRestauration}
               disabled={saisieConfirmation !== PHRASE_CONFIRMATION || restaurationEnCours !== null}
             >
+              {restaurationEnCours !== null && <span className="civilis-spinner sombre" />}
               {restaurationEnCours !== null ? 'Restauration...' : 'Restaurer definitivement'}
             </button>
           </>
